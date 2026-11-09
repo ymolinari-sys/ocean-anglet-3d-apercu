@@ -1,0 +1,16 @@
+{
+  "_licence": "Tous les fichiers de ce dossier sont des créations EVI PRO : synthèse numérique maison (tools/ambiance_audio.py, numpy), même famille de recettes que la bande-son des films (film/build_audio.py). Aucune source externe, aucun enregistrement tiers, aucune licence à créditer. Libre d'usage et de diffusion par EVI PRO.",
+  "_boucle": "Boucles sans couture (fondu de fin recopié au début). Le viewer saute le silence d'encodage MP3 avec loopStart ≈ 0,06 s et loopEnd = durée − 0,08 s.",
+  "_retire": "Ambiance de cuisine (hotte.mp3, friteuse.mp3, four.mp3, plonge.mp3, brouhaha.mp3) retirée de la visite le 08/11/2026 ; la musique reste, au choix au lancement de la visite guidée. Voix off : assets/voix/SOURCES.json.",
+  "_date": "2026-11-08",
+  "fichiers": {
+    "musique.mp3": {
+      "description": "Musique d'ambiance douce : nappe de 4 accords (Am F C G) en cycle de 64 s, cloches pentatoniques rares.",
+      "duree_s": 64.0,
+      "octets": 584876,
+      "canaux": "stéréo",
+      "licence": "création EVI PRO — synthèse maison, aucune source externe",
+      "generation": "tools/ambiance_audio.py (graine 11)"
+    }
+  }
+}

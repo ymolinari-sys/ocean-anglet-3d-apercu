@@ -1,0 +1,1721 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="robots" content="noindex,nofollow"><meta name="theme-color" content="#0f161c"><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="icon-180.png"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black"><meta name="apple-mobile-web-app-title" content="OCÉAN 3D">
+<title>Cuisine OCÉAN Anglet</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;600;700&display=swap">
+<style>
+/* Visite à 360° de la cuisine : WebGL plein écran, barre de points de vue en haut, joystick sur écran tactile, fiche d'aide au départ (interface du stand des Halles). */
+:root{
+  --bg:#eef1f4; --fg:#15202b; --panel:rgba(255,255,255,.88); --line:rgba(21,32,43,.14);
+  --accent:#1f5f9f; --accent-fg:#ffffff; --muted:#5d6b7a; --alert:#e8672b;
+  --font:'Figtree',system-ui,-apple-system,'Segoe UI',sans-serif;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#0f1418; --fg:#e8edf2; --panel:rgba(18,24,30,.9); --line:rgba(232,237,242,.16);
+  --accent:#6fb1f0; --accent-fg:#0b1620; --muted:#9fb0c0; color-scheme:dark } }
+:root[data-theme="dark"]{
+  --bg:#0f1418; --fg:#e8edf2; --panel:rgba(18,24,30,.9); --line:rgba(232,237,242,.16);
+  --accent:#6fb1f0; --accent-fg:#0b1620; --muted:#9fb0c0; color-scheme:dark }
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--font);overflow:hidden;-webkit-user-select:none;user-select:none}
+#c{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none;cursor:grab}
+#c:active{cursor:grabbing}
+#top{position:fixed;left:0;right:0;top:0;padding:calc(env(safe-area-inset-top,0px) + 8px) 12px 8px;display:flex;gap:10px;align-items:center;pointer-events:none}
+.brand{background:var(--panel);backdrop-filter:blur(8px);border:1px solid var(--line);border-radius:10px;padding:6px 10px;pointer-events:auto;min-width:0;flex:0 0 auto}
+.brand b{display:block;font-size:14px;line-height:1.15;text-wrap:balance}
+.brand span{display:block;font-size:11px;color:var(--muted);letter-spacing:.02em}
+.chips{display:flex;gap:5px;overflow-x:auto;pointer-events:auto;padding:2px;scrollbar-width:none;min-width:0}
+.chips::-webkit-scrollbar{display:none}
+button.chip{flex:0 0 auto;font:600 12.5px var(--font);color:var(--fg);background:var(--panel);backdrop-filter:blur(8px);border:1px solid var(--line);border-radius:999px;padding:7px 10px;cursor:pointer}
+button.chip:focus-visible,button.primary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+button.chip.on{background:var(--accent);color:var(--accent-fg);border-color:transparent}
+#legend{position:fixed;right:12px;top:calc(env(safe-area-inset-top,0px) + 64px);bottom:calc(env(safe-area-inset-bottom,0px) + 56px);width:min(300px,calc(100vw - 24px));background:var(--panel);backdrop-filter:blur(8px);border:1px solid var(--line);border-radius:12px;padding:10px 12px;overflow:auto;font-size:12.5px;line-height:1.35;box-sizing:border-box}
+#legend h2{font-size:12px;margin:0 0 6px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+#legend ol{list-style:none;margin:0;padding:0;display:grid;gap:3px}
+#legend li{display:grid;grid-template-columns:34px 1fr;gap:6px;align-items:baseline;cursor:pointer;border-radius:6px;padding:2px 4px}
+#legend li:hover{background:var(--line)}
+#legend li code{font:600 12px var(--font);color:var(--accent)}
+#legend li em{font-style:normal;color:var(--muted);font-size:11px}
+#legend p{margin:8px 0 0;font-size:11px;color:var(--muted)}
+#joy{position:fixed;left:18px;bottom:calc(env(safe-area-inset-bottom,0px) + 22px);width:124px;height:124px;border-radius:50%;background:var(--panel);border:1px solid var(--line);touch-action:none}
+#joy .knob{position:absolute;left:50%;top:50%;width:52px;height:52px;border-radius:50%;background:var(--accent);transform:translate(-50%,-50%);box-shadow:0 2px 8px rgba(0,0,0,.25)}
+#hint{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(env(safe-area-inset-bottom,0px) + 10px);font-size:11.5px;color:var(--muted);background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:5px 11px;white-space:nowrap;max-width:calc(100vw - 32px);overflow:hidden;text-overflow:ellipsis;pointer-events:none}
+#note{position:fixed;right:12px;bottom:calc(env(safe-area-inset-bottom,0px) + 10px);font-size:10.5px;color:var(--muted);max-width:34vw;text-align:right;pointer-events:none}
+#toast{position:fixed;left:50%;transform:translateX(-50%);top:calc(env(safe-area-inset-top,0px) + 70px);background:var(--fg);color:var(--bg);font-size:12.5px;padding:8px 14px;border-radius:8px;opacity:0;transition:opacity .25s;pointer-events:none;max-width:calc(100vw - 32px)}
+#toast.show{opacity:.95}
+#legend li b.mq{font:700 9.5px var(--font);letter-spacing:.07em;border:1px solid var(--line);border-radius:4px;padding:0 4px;margin-left:3px;white-space:nowrap;vertical-align:1px}
+/* fiche équipement : panneau latéral (bureau), tiroir bas ≤ 44 % de l'écran (mobile) */
+#fiche{position:fixed;right:12px;top:calc(env(safe-area-inset-top,0px) + 64px);width:min(320px,calc(100vw - 24px));max-height:calc(100vh - 150px);background:var(--panel);backdrop-filter:blur(8px);border:1px solid var(--line);border-radius:12px;overflow:auto;overscroll-behavior:contain;box-sizing:border-box;font-size:13px;line-height:1.45}
+#fiche .fx{position:sticky;top:6px;float:right;margin:0 6px 0 8px;width:44px;height:44px;border:0;border-radius:10px;background:var(--panel);color:var(--muted);font:inherit;font-size:19px;cursor:pointer;z-index:2}
+#fiche .fx:hover{color:var(--fg)}
+#fiche section{padding:12px 14px;border-top:1px solid var(--line)}
+#fiche section:first-of-type{border-top:0;padding-top:14px}
+#fiche h3{margin:0;font-size:14px;font-weight:600}
+#fiche h3 code{color:var(--accent);font:700 13px var(--font);margin-right:7px}
+#fiche h3 em{font-style:normal;color:var(--muted);font-weight:400;font-size:11.5px;margin-left:6px}
+#fiche dl{display:grid;grid-template-columns:auto 1fr;gap:3px 12px;margin:9px 0 0}
+#fiche dt{color:var(--muted);font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;align-self:baseline;padding-top:2px}
+#fiche dd{margin:0}
+#fiche img{display:block;width:100%;border-radius:8px;margin:9px 0 0;background:#fff;border:1px solid var(--line);box-sizing:border-box}
+#fiche a.ftl{display:inline-flex;align-items:center;gap:6px;min-height:44px;color:var(--accent);text-decoration:none;font-weight:600}
+#fiche a.ftl:hover{text-decoration:underline}
+#fiche .var{margin:9px 0 0;padding:8px 10px;border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:8px;font-size:12px;color:var(--muted)}
+@media (max-width:700px){
+  #fiche{left:0;right:0;top:auto;bottom:0;width:auto;max-height:44vh;border-radius:14px 14px 0 0;border-bottom:0;padding-bottom:env(safe-area-inset-bottom,0px)}
+  body.fiche #joy,body.fiche #hint{display:none}
+}
+/* film : bandes noires, sous-titre (marque + désignation), fondu entre les plans */
+#film{position:fixed;inset:0;pointer-events:none;z-index:5}
+#film::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% 50%,rgba(0,0,0,0) 55%,rgba(0,0,0,.38) 100%)}
+#film .bar{position:absolute;left:0;right:0;height:9vh;background:#000}
+#film .bar.t{top:0} #film .bar.b{bottom:0}
+#fade{position:absolute;inset:0;background:#000;opacity:1}
+#cap{position:absolute;left:max(20px,4vw);bottom:calc(9vh + 18px);max-width:min(560px,calc(100vw - 40px));color:#fff;background:rgba(10,14,18,.58);backdrop-filter:blur(6px);border-radius:10px;padding:10px 16px 11px;opacity:0;transform:translateY(8px);transition:opacity .6s,transform .6s}
+#cap.show{opacity:1;transform:none}
+#cap small{display:block;font:600 11px var(--font);letter-spacing:.12em;opacity:.75}
+#cap b{display:block;font:700 clamp(22px,3.6vw,38px)/1.05 var(--font);letter-spacing:.07em}
+#cap span{display:block;font:500 clamp(13px,1.6vw,17px)/1.3 var(--font);margin-top:4px}
+/* contrôles de la visite guidée : sur la bande noire du haut, cibles ≥ 44 px (iPhone) */
+#film-ui{position:absolute;left:0;right:0;top:max(env(safe-area-inset-top,0px),calc((9vh - 44px)/2));display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:6px;padding:0 10px;pointer-events:none}
+#film-ui .chip{pointer-events:auto;min-height:44px}
+body.film #top,body.film #hint,body.film #note,body.film #joy,body.film #legend,body.film #vrwrap,body.film #toast,body.film #help{display:none!important}
+body.film #fiche{z-index:6}   /* au-dessus des bandes noires, du vignettage et du carton */
+@media (min-width:701px){ body.film #fiche{top:calc(9vh + 60px);max-height:calc(100vh - 18vh - 120px)} body.film.fiche #cap{max-width:min(560px,calc(100vw - max(20px,4vw) - 352px))} }
+@media (max-width:700px){ body.film.fiche #cap{display:none} }   /* le tiroir porte déjà repère, marque et désignation */
+[hidden]{display:none!important}
+#help{position:fixed;inset:0;display:grid;place-items:center;background:rgba(10,16,22,.45);padding:16px;overflow:auto;box-sizing:border-box}
+#help .card{margin:auto;background:var(--panel);backdrop-filter:blur(10px);border:1px solid var(--line);border-radius:14px;padding:18px 20px;max-width:430px;width:100%;box-sizing:border-box}
+#help h1{font-size:19px;margin:0 0 4px;text-wrap:balance}
+#help p{margin:0 0 10px;font-size:13.5px;line-height:1.45;color:var(--muted)}
+#help ul{margin:0 0 14px;padding-left:18px;font-size:13.5px;line-height:1.5}
+#help kbd{font:600 12px var(--font);border:1px solid var(--line);border-radius:5px;padding:1px 5px;background:var(--bg)}
+#load{font-size:12.5px!important}
+#load b{color:var(--fg);font-variant-numeric:tabular-nums}
+#bar{height:4px;margin:6px 0 10px;border-radius:2px;background:color-mix(in srgb,var(--accent) 18%,transparent);overflow:hidden}
+#bar i{display:block;height:100%;width:0;border-radius:2px;background:var(--accent);transition:width .25s}
+button.primary{font:700 14px var(--font);background:var(--accent);color:var(--accent-fg);border:0;border-radius:10px;padding:11px 16px;width:100%;cursor:pointer}
+button.primary:disabled,button.primary[aria-disabled="true"]{opacity:.55;cursor:progress}
+#vrwrap{position:fixed;left:0;right:0;bottom:calc(env(safe-area-inset-bottom,0px) + 44px);display:flex;justify-content:center;gap:10px;pointer-events:none;z-index:999}
+#vrwrap button{position:static !important;transform:none;pointer-events:auto;font-family:var(--font) !important}
+@media (max-width:600px){ #note{display:none} .brand span{display:none} }
+@media (prefers-reduced-motion: reduce){ #toast{transition:none} }
+/* choix du son au lancement de la visite guidée : musique ou voix off */
+#son-choix{position:fixed;inset:0;z-index:1000;display:grid;place-items:center;background:rgba(10,16,22,.45);padding:16px;overflow:auto;box-sizing:border-box}
+#son-choix[hidden]{display:none}
+#son-choix .card{margin:auto;background:var(--panel);backdrop-filter:blur(10px);border:1px solid var(--line);border-radius:14px;padding:18px 20px;max-width:380px;width:100%;box-sizing:border-box;display:grid;gap:8px}
+#son-choix h2{font-size:18px;margin:0}
+#son-choix p{margin:0;font-size:13.5px;line-height:1.45;color:var(--muted)}
+#son-choix button.primary{text-align:left;min-height:56px}
+#son-choix button.primary small{display:block;font:500 12px var(--font);opacity:.85;margin-top:2px}
+#son-choix .bas{display:flex;gap:8px;justify-content:center}
+#son-choix .chip{min-height:44px}
+</style></head><body>
+
+<canvas id="c" aria-label="Visite 3D de la cuisine OCÉAN"></canvas>
+
+<div id="top">
+  <div class="brand"><b>Cuisine OCÉAN Anglet</b><span>EVI PRO · plan ZANUSSI 04/11/26</span></div>
+  <div class="chips" role="toolbar" aria-label="Points de vue">
+    <button class="chip" data-view="chef">Chef</button>
+    <button class="chip" data-view="entree">Entrée</button>
+    <button class="chip" data-view="patisserie">Pâtisserie</button>
+    <button class="chip" data-view="laverie">Laverie</button>
+    <button class="chip" data-view="plan">Plan</button>
+    <button class="chip" id="b-film" title="Visite guidée calculée en direct dans la maquette : tour d'ensemble puis arrêt sur chaque appareil, selon la variante, les murs et les cuisiniers choisis ; son au choix au lancement, musique ou voix off">▶ Visite guidée</button>
+    <button class="chip" id="b-video" hidden title="Joue la visite guidée et l'enregistre en vidéo (fichier à envoyer)">Enregistrer la visite</button>
+    <button class="chip" id="b-labels">Repères</button>
+    <button class="chip" id="b-legend">Liste</button>
+    <button class="chip on" id="b-edges">Contours</button>
+    <button class="chip" id="b-rendu">Rendu réel</button>
+    <button class="chip" id="b-variante" title="Variante de matériel : four neuf et ligne de cuisson chiffrés en MY CHEF · ZANUSSI ou en UNOX · CAPIC ; le reste ne change pas">MY CHEF · ZANUSSI</button>
+    <button class="chip" id="b-murs" title="Finition des murs : peinture, faïence blanche, zellige (3 coloris) ou inox, choix de rendu">Murs : peinture</button>
+    <button class="chip" id="b-cuis" title="Quatre cuisiniers en service, pour juger des passages — masqués par défaut">Cuisiniers</button>
+    <button class="chip" id="b-gyro" hidden>Gyroscope</button>
+    <button class="chip" id="b-install" hidden>Installer</button>
+    <button class="chip" id="b-help">Aide</button>
+  </div>
+</div>
+
+<aside id="legend" hidden>
+  <h2>Matériel</h2>
+  <ol id="legend-list"></ol>
+  <p>Toucher une ligne pour aller voir l'appareil.</p>
+</aside>
+
+<aside id="fiche" hidden aria-label="Fiche de l'équipement"></aside>
+
+<div id="joy" hidden aria-label="Joystick de déplacement"><div class="knob"></div></div>
+<div id="hint">Glisser pour regarder · Z Q S D ou flèches pour se déplacer</div>
+<div id="note">Image de synthèse non contractuelle · implantation d'après plan ZANUSSI du 04/11/26</div>
+<div id="toast" role="status"></div>
+<div id="vrwrap"></div>
+<div id="film" hidden>
+  <div id="fade"></div><div class="bar t"></div><div class="bar b"></div>
+  <div id="cap"><small id="cap-c"></small><b id="cap-m"></b><span id="cap-n"></span></div>
+  <div id="film-ui">
+    <button class="chip" id="f-pause">⏸ Pause</button>
+    <button class="chip" id="f-next">Suivant ▸</button>
+    <button class="chip" id="f-quit">✕ Quitter</button>
+    <button class="chip" id="f-variante"></button>
+    <button class="chip" id="f-murs"></button>
+    <button class="chip" id="f-cuis">Cuisiniers</button>
+  </div>
+</div>
+<div id="son-choix" hidden role="dialog" aria-modal="true" aria-labelledby="son-choix-t"><div class="card">
+  <h2 id="son-choix-t">Visite guidée</h2>
+  <p>Tour d'ensemble puis arrêt sur chaque appareil. Avec quel son ?</p>
+  <button class="primary" data-son="musique">♪ Musique<small>Musique douce en fond, création EVI PRO</small></button>
+  <div class="bas"><button class="chip" data-son="sans">Sans son</button><button class="chip" data-son="non">Annuler</button></div>
+  <p id="son-etat" aria-live="polite"></p>
+</div></div>
+
+<div id="help">
+  <div class="card">
+    <h1>Visite de la cuisine OCÉAN</h1>
+    <p>Implantation 3D d'après le plan ZANUSSI du 04/11/26 et le modèle SketchUp du matériel du 06/11/26 ; inox brossé qui reflète la cuisine.</p>
+    <ul>
+      <li><b>Regarder</b> : glisser le doigt ou la souris.</li>
+      <li><b>Se déplacer</b> : joystick en bas à gauche sur téléphone, <kbd>Z</kbd> <kbd>Q</kbd> <kbd>S</kbd> <kbd>D</kbd> ou flèches sur ordinateur (<kbd>Maj</kbd> pour aller plus vite).</li>
+      <li><b>Points de vue</b> : Chef (devant la ligne de cuisson), Entrée, Pâtisserie, Laverie, Plan.</li>
+      <li><b>Repères</b> : codes C, P et L du plan. <b>Liste</b> : le matériel et sa marque, un clic pour s'en approcher.</li>
+      <li><b>Visite guidée</b> : tour d'ensemble de la cuisine, puis arrêt sur chaque appareil avec sa fiche ; musique douce au choix au lancement ; pause, suivant et quitter pendant la visite, qui suit la variante, les murs et les cuisiniers choisis ; <b>Enregistrer la visite</b> en fait une vidéo à envoyer, avec son son.</li>
+      <li><b>Rendu réel</b> (par défaut) : éclairage précalculé et reflets de la cuisine dans l'inox ; un clic passe au rendu dessin avec contours, façon présentation.</li>
+      <li><b>Murs</b> : peinture, faïence blanche 15 × 15 cm, zellige 10 × 10 cm (blanc, vert ou bleu) ou inox brossé en panneaux, un clic pour passer de l'un à l'autre, aussi pendant la visite guidée ; choix de rendu sur toute la hauteur, derrière les appareils compris, pas une prescription.</li>
+      <li><b>Cuisiniers</b> : quatre personnes en service (chef, second, pâtissier, plongeur) pour juger des passages ; masqués par défaut, un clic les affiche.</li>
+    </ul>
+    <p style="font-size:11px;opacity:.75">Images de synthèse non contractuelles. Musique : création EVI PRO, aucun enregistrement tiers. Voix off provisoire (synthèse vocale).</p>
+    <p id="load">Chargement de la cuisine… <b>0 %</b></p>
+    <div id="bar"><i></i></div>
+    <button class="primary" id="b-start">Entrer dans la cuisine</button>
+  </div>
+</div>
+
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.165.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.165.0/examples/jsm/"}}</script>
+<script type="module">
+import * as THREE from 'three';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+import { VRButton } from 'three/addons/webxr/VRButton.js';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
+
+const $ = id => document.getElementById(id);
+const isTouch = matchMedia('(pointer: coarse)').matches;
+const LOWMEM = isTouch || /OculusBrowser|Quest|Pico|Wolvic/i.test(navigator.userAgent) || /[?&]lowmem\b/.test(location.search);   // téléphones, tablettes, casques autonomes : éclairage en demi-résolution
+const Q = new URLSearchParams(location.search), canvas = $('c');
+const AV = 20; // à incrémenter à chaque nouvelle cuisson (mêmes noms de fichiers : le service worker ne doit pas servir les anciens)
+const AVSON = 1; // version de assets/audio/musique.mp3 (tools/ambiance_audio.py) — séparée d'AV : une recuisson ne re-télécharge pas l'audio
+const AVVOIX = 3; // version des MP3 de voix off (assets/voix/) : tools/voix_off.py l'incrémente à chaque synthèse ou import, sinon le service worker servirait l'ancien
+
+// ---------- Rendu / scène ----------
+// deux rendus, bouton « Rendu réel » (setRendu) : réel par défaut (éclairage cuit, inox brossé qui reflète la cuisine, comme la page 1
+// de la présentation de Julie), ou dessin, aussi par ?rendu=dessin (lumière plate et blanche, contours noirs, comme ses pages SketchUp)
+let PLAN = Q.get('rendu') === 'dessin';
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
+renderer.setPixelRatio(Math.min(devicePixelRatio, isTouch ? 1.5 : 2));
+renderer.toneMappingExposure = +(Q.get('ev') || 0.9);
+renderer.xr.enabled = true;
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0xdfe6ec);
+const pmrem = new THREE.PMREMGenerator(renderer);
+scene.environment = pmrem.fromScene(new RoomEnvironment(renderer), 0.04).texture;
+// fond du rendu réel : ciel de fin d'après-midi en dégradé (celui du film, vu par la fenêtre) ; le dessin garde son fond papier
+const FOND_PLAN = new THREE.Color(0xdfe6ec);
+const SKY = (() => {
+  const cv = document.createElement('canvas'); cv.width = 2; cv.height = 512;
+  const g = cv.getContext('2d'), gr = g.createLinearGradient(0, 0, 0, 512);
+  gr.addColorStop(0, '#7e97b4'); gr.addColorStop(0.42, '#c9c3b4'); gr.addColorStop(0.52, '#f1c98f'); gr.addColorStop(0.6, '#d9a868'); gr.addColorStop(1, '#4e4538');
+  g.fillStyle = gr; g.fillRect(0, 0, 2, 512);
+  const t = new THREE.CanvasTexture(cv); t.mapping = THREE.EquirectangularReflectionMapping; t.colorSpace = THREE.SRGBColorSpace; return t;
+})();
+const camera = new THREE.PerspectiveCamera(64, 1, 0.05, 80);
+const pitchObj = new THREE.Object3D(), rig = new THREE.Object3D();
+pitchObj.add(camera); rig.add(pitchObj); scene.add(rig);
+const EYE = 1.62, MAXA = renderer.capabilities.getMaxAnisotropy();
+
+// Repère Blender de build_scene_v3.py (X, Y, Z en mm) → three.js (m) : x = X, y = Z, z = −Y
+const P3 = (X, Y, Z = 0) => new THREE.Vector3(X / 1000, Z / 1000, -Y / 1000);
+const ROOM = { x0: 4542, x1: 15276, y0: 3810, y1: 12690 };
+
+const NOMS = {
+  C01: 'Four sur la cellule', C02: 'Cellule de refroidissement', C03: 'Soubassement réfrigéré GN 1/1',
+  C04: 'Plan neutre 400', C05: 'Fourneau 4 feux vifs 800', C06: 'Fry-top 400', C07: 'Fry-top 800', C08: 'Friteuse électrique 15 L', C09: 'Friteuse électrique 15 L',
+  C10: 'Étagère barreaudée', C11: 'Table avec bac et robinet', C12: 'Four Cook Master 6 GN 1/1 + hotte à condensation',
+  C13: '3 friteuses à poser', C14: 'Meuble réfrigéré négatif 4 tiroirs', C15: 'Meuble bas traversant', C16: 'Étagère chauffante', C17: 'Bain-marie GN 2/1',
+  C18: 'Meuble réfrigéré 6 tiroirs (îlot)', C19: 'Présentoir réfrigéré à ingrédients', C20: 'Étagère suspendue',
+  C21: 'Meuble réfrigéré 6 tiroirs (îlot)', P01: 'Meuble réfrigéré 6 tiroirs avec bac', P02: 'Étagère murale', P03: 'Conservateur', P05: 'Table roulante',
+  L01: 'Plonge + douchette', L02: 'Lave-vaisselle à capot L305-CV', L03: 'Table de sortie', L04: 'Rayonnage Fermostock',
+};
+// marques : annexe du devis Gafic (build_presentation_v34.py) ; C01 est le four MY CHEF existant
+const MARQUE = { C01: 'MY CHEF', C12: 'MY CHEF', C03: 'CODIGEL', C04: 'ZANUSSI', C05: 'ZANUSSI', C06: 'ZANUSSI', C07: 'ZANUSSI', C08: 'ZANUSSI', C09: 'ZANUSSI',
+  C13: 'FIAMMA', C14: 'INOMAK', C16: 'SOFRACA', C17: 'SOFRACA', C18: 'INOMAK', C19: 'ATOSA', C21: 'INOMAK', P01: 'INOMAK', L02: 'LAMBER', L04: 'FERMOD' };
+const EXIST = new Set(['C01', 'C02', 'P03']);
+// bouton Variante : four neuf et ligne de cuisson aussi chiffrés en UNOX · CAPIC ; C01 reste MY CHEF (four existant), le reste ne change pas
+const MARQUE_B = { C12: 'UNOX', C04: 'CAPIC', C05: 'CAPIC', C06: 'CAPIC', C07: 'CAPIC', C08: 'CAPIC', C09: 'CAPIC' };
+let VARIANTE = false;
+const marque = c => (VARIANTE && MARQUE_B[c]) || MARQUE[c];
+const nom = c => NOMS[c] + (marque(c) ? ' · ' + marque(c) : '') + (EXIST.has(c) ? ' (existant)' : '');
+// faces émissives : hors atlas d'éclairage (UV1 nulles), rendues en émission seule
+const EMIS = { led: null, rampe_ceramique: [1.0, 0.22, 0.04, 1.1], ecran_rouge: [1.0, 0.06, 0.04, 1.4] };
+const CEIL = new Set(['plafond', 'led']);   // masqués en vue Plan
+
+let toastT; function toast(msg) { const t = $('toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('show'), 3200); }
+
+// ---------- Chargement : scène GLB (compression Meshopt, quantization conservée), éclairage cuit, repères, grille ----------
+const loaded = new Map();
+// Total attendu au démarrage, en octets décodés = tailles des fichiers sur le disque (le lecteur de fetchP
+// compte après dégonflage gzip). À recalculer (ls -l) si un fichier chargé dans load() change.
+const TOT = LOWMEM ? 4774795 : 6458031;
+function showLoad() {
+  const n = [...loaded.values()].reduce((a, b) => a + b, 0), pct = Math.min(100, n / TOT * 100);
+  $('load').innerHTML = `Chargement de la cuisine… <b>${Math.round(pct)} %</b> · ${(n / 1048576).toFixed(1).replace('.', ',')} Mo`;
+  $('bar').firstElementChild.style.width = pct.toFixed(1) + '%';
+}
+async function fetchP(f) {
+  const r = await fetch(`assets/${f}?v=${AV}`).then(r => r.ok ? r : Promise.reject()).catch(() => fetch('assets/' + f));
+  if (!r.ok) throw new Error(f);
+  if (!r.body) { loaded.set(f, 0); return r.blob(); }
+  const rd = r.body.getReader(), parts = []; let n = 0;
+  for (;;) { const { done, value } = await rd.read(); if (done) break; parts.push(value); n += value.length; loaded.set(f, n); showLoad(); }
+  return new Blob(parts);
+}
+const LMREF = +(Q.get('occ') || 0.35);   // éclairement (×π) sous lequel les reflets s'éteignent : intérieur des meubles, dessous des tables
+// éclairage cuit = la lumière du film (soleil doré rasant + dalles chaudes, tools/plateau_visite.py) × GAIN,
+// plus une pointe d'appoint uniforme FILL (débouche à peine les recoins : l'ambiance du film prime)
+const GAIN = +(Q.get('gain') || 1), FILL = +(Q.get('fill') ?? 0.06);
+// rendu « présentation » : lumière plate façon SketchUp = ambiance AMB + soleil fixe SOLEIL selon l'orientation de la face,
+// assombrie dans les recoins d'après l'éclairement cuit (poids OMBRE ; plein jour au-delà de OCC_REF ≈ médiane de la cuisson)
+const AMB = +(Q.get('amb') || 0.72), SOLEIL = +(Q.get('soleil') || 0.3), OMBRE = +(Q.get('ombre') ?? 0.5), OCC_REF = 0.25;
+const SOLDIR = new THREE.Vector3(0.45, 1, 0.65).normalize(), f3 = v => v.toArray().map(x => x.toFixed(3)).join(', ');
+// texel jamais cuit (noir pur : lames de SketchUp qui lisent hors de leur îlot, V de la façade de C14, dessus retournés des plaques
+// des fry-tops C06/C07) : éclairement neutre, et reflets à OCC_NEUTRE (plein reflet : plaque blanche ; 0,1 : plaque noire)
+const OCC_NEUTRE = +(Q.get('occn') ?? 0.45);
+const LM_NEUTRE = `float lmBrut = dot( lightMapIrradiance, vec3( 0.2126, 0.7152, 0.0722 ) );
+if ( lmBrut < 0.002 ) lightMapIrradiance = vec3( ${LMREF.toFixed(3)} );\n`;
+// murs du rendu réel (peinture, faïence, zellige) : la cuisson y est bruitée (nuages de ±20 %, cachés tant que les murs étaient
+// métalliques) et grise (murs verticaux sous des plafonniers) : éclairés comme dans le dessin, ambiance A_MUR + soleil S_MUR selon
+// l'orientation, teinte du soir, assombris seulement là où la cuisson tombe sous OCC_MUR (recoins, derrière les appareils, sous les étagères)
+const A_MUR = +(Q.get('amur') ?? 0.9), S_MUR = +(Q.get('smur') ?? 0.3), OCC_MUR = 0.7, OMB_MUR = 0.6, TEINTE_MUR = 'vec3( 1.0, 0.97, 0.92 )';
+const MURK = new Set(['peinture', 'faience', 'zellige']);
+const plat = (amb, sol, ref, omb, teinte) => `irradiance = PI * ( ${amb.toFixed(3)} + ${sol.toFixed(3)} * max( dot( inverseTransformDirection( geometryNormal, viewMatrix ), vec3( ${f3(SOLDIR)} ) ), 0.0 ) )
+    * ${teinte} * mix( 1.0, lmBrut < 0.002 ? 1.0 : clamp( dot( lightMapIrradiance, vec3( 0.2126, 0.7152, 0.0722 ) ) / ${ref.toFixed(3)}, 0.0, 1.0 ), ${omb.toFixed(3)} );`;
+const lmChunk = (plan, mur) => THREE.ShaderChunk.lights_fragment_maps
+  // parenthèses indispensables : sans elles, « LM_NEUTRE + plan » (chaîne non vide) servait de condition et le rendu réel
+  // recevait la lumière plate du dessin (corrigé le 08/11/2026)
+  .replace('irradiance += lightMapIrradiance;', LM_NEUTRE + (plan ? plat(AMB, SOLEIL, OCC_REF, OMBRE, 'vec3( 1.0 )')
+    : mur ? plat(A_MUR, S_MUR, OCC_MUR, OMB_MUR, TEINTE_MUR)
+    : `irradiance = lightMapIrradiance * ${GAIN.toFixed(3)} + vec3( ${(FILL * Math.PI).toFixed(3)} );`))
+  .replace('iblIrradiance += getIBLIrradiance( geometryNormal );', '') + `
+#if defined( USE_LIGHTMAP ) && defined( RE_IndirectSpecular )
+  float lmOcc = lmBrut < 0.002 ? ${(mur ? 1 : OCC_NEUTRE).toFixed(3)} : clamp( dot( lightMapIrradiance, vec3( 0.2126, 0.7152, 0.0722 ) ) / ${LMREF.toFixed(3)}, 0.1, 1.0 );
+  radiance *= lmOcc;
+  #ifdef USE_CLEARCOAT
+    clearcoatRadiance *= lmOcc;
+  #endif
+#endif
+`;
+// décors calculés en coordonnées monde (les UV0 de la scène ne suivent pas le sens du métal ni la trame d'un carrelage)
+const TILE = 0.3, T0 = P3(ROOM.x0, ROOM.y0);   // carrelage 30 cm : choix de rendu, pas une cote du plan ; calé sur l'angle de la pièce
+// brossage du rendu réel : variation de teinte et de rugosité tirées de la carte (±0,5) ; un carreau = 0,5 m
+const VC = +(Q.get('vc') ?? 0.12), VR = +(Q.get('vr') ?? 0.16), ECH = 0.5;
+// façades / dessus (choix de rendu, pour lire l'arête entre les deux) : façades au brossage plus marqué, un ton plus sombres et plus
+// satinées ; dessus au brossage deux fois plus fin, plus lisses. ?fd=0 : même brossage partout
+const FD = +(Q.get('fd') ?? 1), VCF = VC * (1 + 0.5 * FD), VCD = VC * (1 - 0.4 * FD), TF = 1 - 0.08 * FD, RF = 0.08 * FD, RD = 0.06 * FD, ECHD = ECH / (1 + FD);
+// inox du rendu réel : reflet de l'acier = KI × teinte du modèle (0,76), rugosité RO, orientation du reflet brossé ROT (choix de rendu)
+const KI = +(Q.get('ki') ?? 0.75), RO = +(Q.get('ro') ?? 0.25), ROT = +(Q.get('rot') ?? Math.PI / 2);
+// éclat (choix de rendu) : plafonniers LEDX fois plus forts dans les reflets seulement, brossé d'anisotropie AN, halo HALO des points
+// plus lumineux que SEUIL (rendu réel sur ordinateur, ?halo=0 pour s'en passer)
+const LEDX = +(Q.get('led') || 1.3), AN = +(Q.get('an') ?? 0.6), HALO = +(Q.get('halo') ?? 0.15), SEUIL = +(Q.get('seuil') ?? 2);
+// normale sûre : celle du modèle, sauf à plus de 45° de sa facette (lames de SketchUp, parfois retournées : traits sombres en
+// éventail sur la façade de C14). Faces verticales : traits horizontaux le long de la face, tirés de cette normale, comme dans
+// brossage() ; dessus : UV de brossage()
+const NSURE_F = `
+vec3 nSure( vec3 n, vec3 p ) {
+  vec3 g = normalize( cross( dFdx( p ), dFdy( p ) ) );
+  return dot( n, g ) < 0.7 ? g : n;
+}`;
+const UVB = `
+  vec3 nB = nSure( normalize( vWN ), vWP );
+  vec2 uvB = abs( nB.y ) > 0.7 ? vUvb : vec2( dot( vWP.xz, normalize( vec2( nB.z, - nB.x ) ) ), vWP.y );`;
+const UVM = `
+  vec3 nM = nSure( normalize( vWN ), vWP );
+  vec2 uvM = abs( nM.y ) > 0.7 ? vWP.xz : vec2( dot( vWP.xz, normalize( vec2( nM.z, - nM.x ) ) ), vWP.y );`;
+const NORM_F = `
+  normal = nSure( normal, vViewPosition );
+  #ifdef USE_ANISOTROPY
+  {
+    vec3 w = inverseTransformDirection( normal, viewMatrix );
+    if ( abs( w.y ) > 0.7 ) tbn = getTangentFrame( - vViewPosition, normal, vUv );
+    else { vec3 t = normalize( ( viewMatrix * vec4( normalize( vec3( w.z, 0.0, - w.x ) ), 0.0 ) ).xyz ); tbn = mat3( t, cross( normal, t ), normal ); }
+  }
+  #endif
+  nonPerturbedNormal = normal;`;
+const DECOR = {
+  peinture: () => [],   // murs peints : seulement l'éclairage des murs (lmChunk)
+  // carrelage blanc, joints gris clair de 3 mm
+  sol: () => [['#include <color_fragment>', `
+  {
+    vec2 e = 0.5 - abs( fract( ( vWP.xz - vec2( ${T0.x.toFixed(4)}, ${T0.z.toFixed(4)} ) ) / ${TILE.toFixed(3)} ) - 0.5 );
+    float d = min( e.x, e.y ), w = fwidth( d ), hw = ${(0.0015 / TILE).toFixed(5)};
+    diffuseColor.rgb = mix( vec3( 0.55, 0.57, 0.58 ), diffuseColor.rgb, smoothstep( hw - w, hw + w, d ) );
+  }`]],
+  // inox brossé d'après la photo ambientCG Metal009 (CC0), sur les UV de brossage(). Dessin : la photo retouchée façon SketchUp
+  // (tools/inox_tex.py), 0,6 m par carreau. Réel : sa carte de brossage (tools/inox_pbr.py) module la rugosité et à peine la teinte ;
+  // l'éclat vient des reflets de la cuisine (captureEnv)
+  photo: () => PLAN ? [['#include <color_fragment>', UVB + `
+  diffuseColor.rgb *= texture2D( tInox, uvB / 0.6 ).rgb;`]] : [['#include <color_fragment>', UVB + `
+  float dessus = smoothstep( 0.6, 0.8, abs( nB.y ) );
+  float brosse = mix( texture2D( tInox, uvB / ${ECH.toFixed(2)} ).r, texture2D( tInox, uvB / ${ECHD.toFixed(3)} ).r, dessus ) - 0.5;
+  diffuseColor.rgb *= ( 1.0 + mix( ${VCF.toFixed(3)}, ${VCD.toFixed(3)}, dessus ) * brosse ) * mix( ${TF.toFixed(3)}, 1.0, dessus );`], ['#include <roughnessmap_fragment>', `
+  roughnessFactor = clamp( roughnessFactor - ${VR.toFixed(3)} * brosse + mix( ${RF.toFixed(3)}, ${(-RD).toFixed(3)}, dessus ), 0.05, 1.0 );`]],
+  // murs (bouton « Murs », choix de rendu), en coordonnées monde comme uvB. Zellige 10 × 10 cm (tools/zellige.py, motif de 1,2 m) :
+  // clarté de chaque carreau retouchée par un tirage propre (casse la répétition) ; réel : relief, dévers et rugosité de la carte
+  zellige: () => [['#include <color_fragment>', UVM + `
+  vec4 zN = texture2D( tZelN, uvM / 1.2 );
+  float hz = fract( sin( dot( floor( uvM / 0.1 ), vec2( 12.9898, 78.233 ) ) ) * 43758.5453 );
+  diffuseColor.rgb *= texture2D( tZel, uvM / 1.2 ).rgb * ( 0.94 + 0.12 * hz );`], ...(PLAN ? [] : [['#include <roughnessmap_fragment>', `
+  roughnessFactor = zN.b;`], ['#include <normal_fragment_maps>', `
+  {
+    vec3 w = inverseTransformDirection( normal, viewMatrix );
+    vec3 tW = abs( w.y ) > 0.7 ? vec3( 1.0, 0.0, 0.0 ) : normalize( vec3( w.z, 0.0, - w.x ) ), bW = abs( w.y ) > 0.7 ? vec3( 0.0, 0.0, 1.0 ) : vec3( 0.0, 1.0, 0.0 );
+    vec2 nt = zN.rg * 2.0 - 1.0 + 0.04 * ( vec2( fract( hz * 7.13 ), fract( hz * 3.71 ) ) - 0.5 );
+    normal = normalize( ( viewMatrix * vec4( tW * nt.x + bW * nt.y + w * sqrt( max( 1.0 - dot( nt, nt ), 0.0 ) ), 0.0 ) ).xyz );
+  }`]])],
+  // faïence blanche 15 × 15 cm de cuisine pro (choix de rendu, pas une prescription), joints ciment de 2 mm partant du sol ; réel : émail
+  // brillant, joints mats, bords arrondis sur 6 mm (le reflet se casse à chaque joint)
+  faience: () => [['#include <color_fragment>', UVM + `
+  vec2 fq = uvM / 0.15, fe = ( 0.5 - abs( fract( fq ) - 0.5 ) ) * 0.15;
+  float fd = min( fe.x, fe.y ), fj = 1.0 - smoothstep( 0.001 - fwidth( fd ), 0.001 + fwidth( fd ), fd );
+  float hf = fract( sin( dot( floor( fq ), vec2( 12.9898, 78.233 ) ) ) * 43758.5453 );
+  diffuseColor.rgb *= mix( vec3( 0.95 + 0.03 * hf ), vec3( 0.6, 0.6, 0.58 ), fj );`], ...(PLAN ? [] : [['#include <roughnessmap_fragment>', `
+  roughnessFactor = mix( 0.08, 0.85, fj );`], ['#include <normal_fragment_maps>', `
+  {
+    vec3 w = inverseTransformDirection( normal, viewMatrix );
+    vec3 tW = abs( w.y ) > 0.7 ? vec3( 1.0, 0.0, 0.0 ) : normalize( vec3( w.z, 0.0, - w.x ) ), bW = abs( w.y ) > 0.7 ? vec3( 0.0, 0.0, 1.0 ) : vec3( 0.0, 1.0, 0.0 );
+    vec2 s = sign( fract( fq ) - 0.5 ) * ( 1.0 - smoothstep( 0.0, 0.006, fe ) ) * 0.35;
+    normal = normalize( ( viewMatrix * vec4( normalize( w + tW * s.x + bW * s.y ), 0.0 ) ).xyz );
+  }`]])],
+  // inox en panneaux de 1,25 × 2,5 m brossés en hauteur, même photo et même carte que l'inox des appareils : joints de 3 mm, clarté propre
+  // à chaque panneau
+  murinox: () => [['#include <color_fragment>', UVM + `
+  vec2 pq = uvM / vec2( 1.25, 2.5 ), pe = ( 0.5 - abs( fract( pq ) - 0.5 ) ) * vec2( 1.25, 2.5 );
+  float jd = min( pe.x, pe.y ), jl = 1.0 - smoothstep( 0.0015 - fwidth( jd ), 0.0015 + fwidth( jd ), jd );
+  float hp = fract( sin( dot( floor( pq ), vec2( 12.9898, 78.233 ) ) ) * 43758.5453 );` + (PLAN ? `
+  diffuseColor.rgb *= texture2D( tInox, uvM.yx / 0.6 ).rgb * ( 1.0 - 0.6 * jl );` : `
+  float brosse = texture2D( tInox, uvM.yx / ${ECH.toFixed(2)} ).r - 0.5;
+  diffuseColor.rgb *= ( 1.0 + ${VC.toFixed(3)} * brosse ) * ( 0.97 + 0.06 * hp ) * ( 1.0 - 0.6 * jl );`)], ...(PLAN ? [] : [['#include <roughnessmap_fragment>', `
+  roughnessFactor = clamp( roughnessFactor - ${VR.toFixed(3)} * brosse + 0.25 * jl, 0.05, 1.0 );`]])],
+};
+// reflets projetés sur la boîte de la pièce (correction de parallaxe) : un plan de travail reflète le mur et les plafonniers qui lui
+// font face, pas ce que la sonde voit depuis le centre de la pièce. Boîte = sol × hauteur sous plafond, posée au chargement.
+const SONDE = P3(9800, 8000, 1450);
+const ENVU = { eMin: { value: new THREE.Vector3().setScalar(-1e3) }, eMax: { value: new THREE.Vector3().setScalar(1e3) }, eSonde: { value: SONDE } };
+const ZEL = { tZel: { value: null }, tZelN: { value: null } };   // zellige des murs : couleur du coloris choisi, relief + rugosité
+const BOITE_F = `
+uniform vec3 eMin, eMax, eSonde;
+vec3 boiteEnv( vec3 d ) {
+  vec3 a = ( eMax - vWP ) / d, b = ( eMin - vWP ) / d, m = max( a, b );
+  return vWP + d * max( min( min( m.x, m.y ), m.z ), 0.0 ) - eSonde;
+}`;
+const ENV_PARS = THREE.ShaderChunk.envmap_physical_pars_fragment
+  .replace('reflectVec = inverseTransformDirection( reflectVec, viewMatrix );', '$& reflectVec = boiteEnv( reflectVec );');
+const DECOR_V = '\n  vWP = ( modelMatrix * vec4( transformed, 1.0 ) ).xyz; vWN = normalize( mat3( modelMatrix ) * objectNormal );';
+function lmMat(m, tex, k, kind) {
+  if (tex) { m.lightMap = tex; m.lightMapIntensity = k; }
+  m.onBeforeCompile = sh => {
+    if (tex) sh.fragmentShader = sh.fragmentShader.replace('#include <lights_fragment_maps>', lmChunk(PLAN, MURK.has(kind)));
+    const ph = kind === 'photo', ix = ph || kind === 'murinox', zl = kind === 'zellige', V = '#include <common>\nvarying vec3 vWP; varying vec3 vWN;' + (ph ? ' varying vec2 vUvb;' : '');
+    Object.assign(sh.uniforms, ENVU, zl ? ZEL : {});
+    if (ix) sh.uniforms.tInox = { value: PLAN ? INOX : INOXR };
+    sh.vertexShader = sh.vertexShader.replace('#include <common>', V + (ph ? ' attribute vec2 uvb;' : ''))
+      .replace('#include <project_vertex>', '#include <project_vertex>' + DECOR_V + (ph ? ' vUvb = uvb;' : ''));
+    sh.fragmentShader = sh.fragmentShader.replace('#include <common>', V + BOITE_F + NSURE_F + (ix ? ' uniform sampler2D tInox;' : '') + (zl ? ' uniform sampler2D tZel, tZelN;' : ''))
+      .replace('#include <envmap_physical_pars_fragment>', ENV_PARS).replace('#include <normal_fragment_begin>', '$&' + NORM_F);
+    if (kind) for (const [at, code] of DECOR[kind]()) sh.fragmentShader = sh.fragmentShader.replace(at, at + code);
+  };
+  m.customProgramCacheKey = () => 'lm' + !!tex + (kind || '') + PLAN; m.needsUpdate = true;
+}
+// Traits du dessin : comme THREE.EdgesGeometry (pli > deg entre faces voisines, ou bord libre), mais la normale d'un triangle est celle
+// de ses sommets (calculée par Blender sur le polygone d'origine) : les triangles très fins du modèle de Julie, une fois quantifiés,
+// ont une normale recalculée au hasard qui dessinait des éventails de traits noirs. Arête non orientée, faces retournées comprises.
+function aretes(g, deg) {
+  const p = g.attributes.position, nr = g.attributes.normal, ix = g.index, n = ix ? ix.count : p.count, id = i => ix ? ix.getX(i) : i;
+  const seuil = Math.cos(deg * Math.PI / 180), a = new THREE.Vector3(), b = new THREE.Vector3(), c = new THREE.Vector3(), tri = new THREE.Triangle();
+  const N = new Float32Array(n), cle = [], vus = new Map(), out = [];
+  for (let i = 0; i < n; i++) { a.fromBufferAttribute(p, id(i)); cle.push(`${Math.round(a.x * 1e4)},${Math.round(a.y * 1e4)},${Math.round(a.z * 1e4)}`); }
+  for (let t = 0; t < n; t += 3) {
+    if (nr) a.fromBufferAttribute(nr, id(t)).add(b.fromBufferAttribute(nr, id(t + 1))).add(c.fromBufferAttribute(nr, id(t + 2))).normalize();
+    else tri.setFromAttributeAndIndices(p, id(t), id(t + 1), id(t + 2)).getNormal(a);
+    a.toArray(N, t);
+    for (let j = 0; j < 3; j++) {
+      const k0 = cle[t + j], k1 = cle[t + (j + 1) % 3];
+      if (k0 === k1) continue;
+      const k = k0 < k1 ? k0 + '|' + k1 : k1 + '|' + k0, e = vus.get(k);
+      if (e) e.f.push(t); else vus.set(k, { s: [t + j, t + (j + 1) % 3], f: [t] });
+    }
+  }
+  for (const { s, f } of vus.values()) {
+    const [t0] = f;
+    if (f.length > 1 && f.every(t => Math.abs(N[t] * N[t0] + N[t + 1] * N[t0 + 1] + N[t + 2] * N[t0 + 2]) > seuil)) continue;
+    for (const i of s) { a.fromBufferAttribute(p, id(i)); out.push(a.x, a.y, a.z); }
+  }
+  const r = new THREE.BufferGeometry();
+  r.setAttribute('position', new THREE.Float32BufferAttribute(out, 3));
+  return r;
+}
+// UV de brossage (m) pour la photo d'inox : u suit les traits. Faces verticales : u horizontal le long de la face, v = hauteur.
+// Dessus : u dans la longueur du meuble — îlots de sommets soudés au mm, sens = arêtes vives horizontales (modulo 90°), côté le plus long.
+function brossage(g) {
+  const P = g.attributes.position.array, N = g.attributes.normal.array, I = g.index.array, nv = P.length / 3;
+  const key = new Map(), id = new Int32Array(nv);
+  for (let i = 0; i < nv; i++) {
+    const k = `${Math.round(P[3 * i] * 1e3)},${Math.round(P[3 * i + 1] * 1e3)},${Math.round(P[3 * i + 2] * 1e3)}`;
+    let v = key.get(k); if (v === undefined) key.set(k, v = key.size); id[i] = v;
+  }
+  const n = key.size, up = Int32Array.from({ length: n }, (_, i) => i), root = a => { while (up[a] !== a) a = up[a] = up[up[a]]; return a; };
+  const rep = new Int32Array(n).fill(-1);
+  for (let i = 0; i < nv; i++) if (rep[id[i]] < 0) rep[id[i]] = i;
+  for (let t = 0; t < I.length; t += 3) { const a = root(id[I[t]]); up[root(id[I[t + 1]])] = a; up[root(id[I[t + 2]])] = a; }
+  // arête vive = pli marqué entre ses deux faces, ou bord libre — par sommets soudés, pour ne pas dépendre de l'indexation
+  // (doublons, découpage ou fusion des primitives par l'optimiseur), qui dédouble ou ressoude les arêtes selon l'outil
+  const nb = new Map();
+  for (let t = 0; t < I.length; t += 3) {
+    const i0 = 3 * I[t], i1 = 3 * I[t + 1], i2 = 3 * I[t + 2];
+    const ux = P[i1] - P[i0], uy = P[i1 + 1] - P[i0 + 1], uz = P[i1 + 2] - P[i0 + 2];
+    const vx = P[i2] - P[i0], vy = P[i2 + 1] - P[i0 + 1], vz = P[i2 + 2] - P[i0 + 2];
+    let fx = uy * vz - uz * vy, fy = uz * vx - ux * vz, fz = ux * vy - uy * vx;
+    const fl = Math.hypot(fx, fy, fz); if (fl < 1e-10) continue;   // triangle dégénéré : ignoré (l'optimiseur peut les retirer)
+    fx /= fl; fy /= fl; fz /= fl;
+    for (let e = 0; e < 3; e++) {
+      const a = id[I[t + e]], b = id[I[t + (e + 1) % 3]]; if (a === b) continue;
+      const k = Math.min(a, b) * n + Math.max(a, b), v = nb.get(k);
+      if (!v) nb.set(k, [1, fx, fy, fz, 1]);
+      else { v[0]++; v[4] = Math.min(v[4], fx * v[1] + fy * v[2] + fz * v[3]); }
+    }
+  }
+  const C = new Float64Array(n), S = new Float64Array(n), th = new Float64Array(n), E = new Float64Array(4 * n);
+  for (const [k, v] of nb) {
+    const a = rep[Math.floor(k / n)], b = rep[k % n], dx = P[3 * b] - P[3 * a], dz = P[3 * b + 2] - P[3 * a + 2], L = Math.hypot(dx, dz);
+    if ((v[0] > 1 && v[4] > 0.9) || Math.abs(P[3 * b + 1] - P[3 * a + 1]) > 1e-3 || L < 0.005) continue;
+    const r = root(id[a]), w = 4 * Math.atan2(dz, dx); C[r] += L * Math.cos(w); S[r] += L * Math.sin(w);
+  }
+  for (let r = 0; r < n; r++) { th[r] = Math.atan2(S[r], C[r]) / 4; E[4 * r] = E[4 * r + 2] = Infinity; E[4 * r + 1] = E[4 * r + 3] = -Infinity; }
+  for (let i = 0; i < nv; i++) {
+    const r = root(id[i]), c = Math.cos(th[r]), s = Math.sin(th[r]), p = P[3 * i] * c + P[3 * i + 2] * s, q = P[3 * i + 2] * c - P[3 * i] * s;
+    E[4 * r] = Math.min(E[4 * r], p); E[4 * r + 1] = Math.max(E[4 * r + 1], p); E[4 * r + 2] = Math.min(E[4 * r + 2], q); E[4 * r + 3] = Math.max(E[4 * r + 3], q);
+  }
+  for (let r = 0; r < n; r++) if (E[4 * r + 3] - E[4 * r + 2] > E[4 * r + 1] - E[4 * r]) th[r] += Math.PI / 2;
+  const uv = new Float32Array(2 * nv);
+  for (let i = 0; i < nv; i++) {
+    const x = P[3 * i], z = P[3 * i + 2], nx = N[3 * i], nz = N[3 * i + 2];
+    if (Math.abs(N[3 * i + 1]) > 0.7) { const t = th[root(id[i])], c = Math.cos(t), s = Math.sin(t); uv[2 * i] = x * c + z * s; uv[2 * i + 1] = z * c - x * s; }
+    else { const h = Math.hypot(nx, nz) || 1; uv[2 * i] = (x * nz - z * nx) / h; uv[2 * i + 1] = P[3 * i + 1]; }
+  }
+  g.setAttribute('uvb', new THREE.BufferAttribute(uv, 2));
+}
+const PHOTO = new Set(['inox', 'inox_facade', 'inox_sombre']);
+// murs, sol et plafond sortent métalliques de la scène (métal 1) : en rendu réel ils renvoyaient les reflets de la cuisine et se
+// confondaient avec l'inox (retour du 08/11/2026). Réel : peinture mate, carrelage satiné (rugosités = choix de rendu) ; dessin inchangé
+const MAT_REEL = { mur: 0.9, plafond: 0.9, sol: 0.3, porte: 0.5 };
+let INOX = null, INOXR = null;   // photo d'inox brossé (dessin), carte de brossage (réel)
+const RENDU = [];   // matériaux réglés selon le rendu : userData.rendu = [réel, dessin], chacun [métal, rugosité, couleur]
+const LEDS = [], MUR = [];   // plafonniers (renforcés dans les reflets), murs (finition au choix)
+let LM = null;   // éclairage cuit [texture, échelle] : repris par les finitions de murs
+// contours noirs « style plan » (comme la présentation SketchUp) : arêtes vives des appareils et des murs
+const EDGE = new THREE.LineBasicMaterial({ color: 0x1d2328, transparent: true, opacity: 0.6 }), edges = [];
+// liserés du rendu réel : les mêmes arêtes, fines et estompées avec la distance, sur les appareils seulement (chanfreins, joints entre
+// éléments, poignées, manettes lisibles sur l'inox) ; remplacés par les contours quand on les affiche. ?lis=0 pour s'en passer
+const EDGE_R = new THREE.LineBasicMaterial({ color: 0x1d2328, transparent: true, opacity: +(Q.get('lis') ?? 0.3), depthWrite: false }), lis = [];
+EDGE_R.onBeforeCompile = sh => {
+  sh.vertexShader = sh.vertexShader.replace('#include <common>', '$&\nvarying float vDist;').replace('#include <project_vertex>', '$&\n  vDist = - mvPosition.z;');
+  sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '$&\nvarying float vDist;')
+    .replace('#include <color_fragment>', '$&\n  diffuseColor.a *= 1.0 - smoothstep( 3.5, 7.0, vDist );');
+};
+
+let G = null;   // grille de circulation 5 cm (bake_export.py) : 1 = bloqué
+const labelGroup = new THREE.Group(); labelGroup.visible = false; scene.add(labelGroup);
+let REP = {}, ready = false;
+
+// scène quantifiée (KHR_mesh_quantization, gltfpack) : remise en flottants et en mètres pour brossage() et les contours
+function flottants(o) {
+  const g = o.geometry;
+  for (const k of Object.keys(g.attributes)) {
+    const at = g.attributes[k];
+    if (!at.normalized && at.array instanceof Float32Array && !at.isInterleavedBufferAttribute) continue;
+    const f = new Float32Array(at.count * at.itemSize), get = [at.getX, at.getY, at.getZ, at.getW];
+    for (let i = 0; i < at.count; i++) for (let c = 0; c < at.itemSize; c++) f[i * at.itemSize + c] = get[c].call(at, i);
+    g.setAttribute(k, new THREE.BufferAttribute(f, at.itemSize));
+  }
+  g.applyMatrix4(o.matrixWorld);
+}
+
+async function load() {
+  const [sceneB, man, rep, grid, inoxB, inoxrB] = await Promise.all([fetchP('scene/ocean.glb'), fetchP('bake/lm.json').then(b => b.text()).then(JSON.parse),
+    fetchP('bake/reperes.json').then(b => b.text()).then(JSON.parse), fetchP('bake/grille.json').then(b => b.text()).then(JSON.parse),
+    fetchP(`tex/inox_${LOWMEM ? 1024 : 2048}.jpg`), fetchP('tex/inoxr_1024.jpg')]);
+  const marques = Promise.all(['mychef.jpg', 'zanussi.png'].map(f => fetchP('marques/' + f).then(b => createImageBitmap(b, { premultiplyAlpha: 'none' })))).catch(() => null);
+  [INOX, INOXR] = await Promise.all([inoxB, inoxrB].map(b => createImageBitmap(b)))
+    .then(bs => bs.map((b, i) => { const t = new THREE.Texture(b); t.colorSpace = i ? THREE.NoColorSpace : THREE.SRGBColorSpace; return t; }));
+  for (const t of [INOX, INOXR]) { t.wrapS = t.wrapT = THREE.RepeatWrapping; t.flipY = false; t.anisotropy = MAXA; t.needsUpdate = true; }
+  G = { ...grid, bits: Uint8Array.from(atob(grid.bits), c => c.charCodeAt(0)) }; REP = rep;
+  const lmB = /[?&]nolm\b/.test(location.search) ? null : await fetchP(`bake/lm_${LOWMEM ? man.size / 2 : man.size}.jpg`);
+  const gltf = await new GLTFLoader().setMeshoptDecoder(MeshoptDecoder).parseAsync(await sceneB.arrayBuffer(), '');
+  let tex = null;
+  if (lmB) {
+    tex = new THREE.Texture(await createImageBitmap(lmB));
+    tex.channel = 1; tex.flipY = false; tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = Math.min(4, MAXA); tex.needsUpdate = true;
+  }
+  LM = [tex, man.scale];
+  const meshes = []; gltf.scene.traverse(o => { if (o.isMesh) meshes.push(o); });
+  gltf.scene.updateMatrixWorld(true);
+  for (const o of meshes) flottants(o);
+  gltf.scene.traverse(o => { o.position.set(0, 0, 0); o.quaternion.identity(); o.scale.set(1, 1, 1); });
+  // porte d'entrée : face par défaut de SketchUp (FrontColor), métallique dans la scène → elle passait pour de l'inox. Ses faces hors des
+  // repères (porte, huisserie) deviennent une peinture satinée éclairée comme les murs ; dans les repères (dessus de C17, C18) rien ne change
+  const fc = meshes.find(o => o.material.name.split('.')[0] === 'FrontColor');
+  if (fc?.geometry.index) {
+    const g = fc.geometry, p = g.attributes.position, ix = g.index.array, B = Object.values(rep), dans = [], hors = [];
+    for (let t = 0; t < ix.length; t += 3) {
+      let x = 0, y = 0, z = 0; for (let k = 0; k < 3; k++) { x += p.getX(ix[t + k]); y += p.getY(ix[t + k]); z += p.getZ(ix[t + k]); }
+      const X = x * 1000 / 3, Y = -z * 1000 / 3, Z = y * 1000 / 3;   // m three → mm Blender
+      (B.some(b => X > b.min[0] - 30 && X < b.max[0] + 30 && Y > b.min[1] - 30 && Y < b.max[1] + 30 && Z > b.min[2] - 30 && Z < b.max[2] + 30)
+        ? dans : hors).push(ix[t], ix[t + 1], ix[t + 2]);
+    }
+    if (hors.length) {
+      const g2 = new THREE.BufferGeometry(); for (const k in g.attributes) g2.setAttribute(k, g.attributes[k]);
+      g.setIndex(dans); g2.setIndex(hors);
+      const o2 = new THREE.Mesh(g2, new THREE.MeshStandardMaterial({ name: 'porte', color: fc.material.color, metalness: fc.material.metalness, roughness: fc.material.roughness }));
+      fc.parent.add(o2); meshes.push(o2);
+    }
+  }
+  const bSol = new THREE.Box3(), bPla = new THREE.Box3();   // boîte des reflets : emprise du sol, du sol au plafond
+  for (const o of meshes) {
+    const n = o.material.name.split('.')[0];
+    if (n === 'sol' || n === 'plafond') { o.geometry.computeBoundingBox(); (n === 'sol' ? bSol : bPla).union(o.geometry.boundingBox); }
+  }
+  if (!bSol.isEmpty() && !bPla.isEmpty()) { ENVU.eMin.value.copy(bSol.min); ENVU.eMax.value.set(bSol.max.x, bPla.max.y, bSol.max.z); }
+  for (const o of meshes) {
+    const m = o.material, n = m.name.split('.')[0];
+    if (CEIL.has(n)) o.userData.ceiling = true;
+    if (m.map) m.map.anisotropy = MAXA;
+    if (n === 'led') LEDS.push(m);
+    if (n in EMIS) { if (EMIS[n]) { const [r, g, b, k] = EMIS[n]; m.emissive.setRGB(r, g, b); m.emissiveIntensity = k; } continue; }
+    if (n === 'vitre') { m.transmission = 0; m.transparent = true; m.opacity = 0.2; m.depthWrite = false; m.roughness = 0.3; continue; }
+    const kind = PHOTO.has(n) ? 'photo' : n === 'sol' ? 'sol' : n === 'mur' || n === 'porte' ? 'peinture' : '';
+    if (kind === 'photo') brossage(o.geometry);
+    // anisotropie (inox de Blender) : three.js tire son repère tangent des UV0, mais hors des textures ceux de SketchUp
+    // sont quelconques (et gltfpack les garde tous) : repère nul ou faux, les reflets s'éteignent (inox noir en rendu réel).
+    // Sans texture, on impose donc le sens de brossage()
+    if (m.anisotropy > 0 && !m.map) {
+      if (!o.geometry.attributes.uvb) brossage(o.geometry);
+      o.geometry.setAttribute('uv', o.geometry.attributes.uvb);
+    }
+    // réel : inox métallique, reflet de l'acier (KI × la teinte du modèle), rugosité RO ; la carte de brossage (moyenne 0,5) n'en change
+    // pas la clarté. Dessin : l'inox de base (0,76) prend la photo telle quelle, sans reflet ; murs blancs comme chez Julie (teinte : pas dans le plan)
+    if ((kind === 'photo' || n in MAT_REEL) && !m.userData.rendu) {
+      const c = m.color.clone();
+      m.userData.rendu = kind === 'photo' ? [[1, n === 'inox' ? RO : m.roughness, c.clone().multiplyScalar(KI)], [0, 0.5, c.clone().multiplyScalar(1 / 0.76)]]
+        : [[0, MAT_REEL[n], c], [m.metalness, m.roughness, n === 'mur' ? new THREE.Color().setScalar(0.95) : c]];
+      RENDU.push(m);
+    }
+    // brossé : reflet étiré en travers des traits (sens de brossage = u de brossage(), d'où le quart de tour)
+    if (m.anisotropy > 0) { m.anisotropy = AN; m.anisotropyRotation = ROT; }
+    if (n === 'mur') { MUR.push(o); o.userData.peinture = m; }
+    lmMat(m, tex, man.scale, kind);
+    if (CEIL.has(n) || n === 'sol') continue;
+    const e = new THREE.LineSegments(aretes(o.geometry, 25), EDGE);
+    o.add(e); edges.push(e);
+    if (n !== 'mur' && n !== 'porte') { const l = new THREE.LineSegments(e.geometry, EDGE_R); l.visible = false; o.add(l); lis.push(l); }
+    m.polygonOffset = true; m.polygonOffsetFactor = 1; m.polygonOffsetUnits = 1;   // les traits passent devant les faces
+  }
+  scene.add(gltf.scene); gltf.scene.updateMatrixWorld(true);
+  habiller(meshes.filter(o => !/^(vitre|plafond|led|sol)/.test(o.material.name)), await marques);
+  setRendu(PLAN, Q.has('contours') ? Q.get('contours') !== '0' : PLAN);   // contours avec le dessin, pas avec le rendu réel
+  if (Q.get('murs')) setMurs(Q.get('murs'));
+  for (const [code, b] of Object.entries(rep)) if (NOMS[code]) makeLabel(code, b);
+  majLegende();
+  // délégation : majLegende() réécrit les <li> à chaque variante, un listener par li serait perdu
+  $('legend-list').addEventListener('click', e => { const li = e.target.closest('li'); if (li) goTo(li.dataset.code); });
+  brigade();
+  ready = true; $('load').hidden = true; $('bar').hidden = true; $('b-start').disabled = false;
+  if (VIEWS[cur]) setView(cur);   // la grille est là : repositionne hors des meubles
+  console.log(`[ocean] scène + éclairage ${man.size} px (${man.samples} éch.)`);
+}
+
+// reflets de l'inox : la cuisine éclairée elle-même, vue de la sonde (centre de la pièce), sans repères ni contours ;
+// setRendu la prend deux fois au premier rendu réel (à la seconde, l'inox s'y reflète déjà)
+let envPret = false;
+function captureEnv() {
+  if (renderer.xr.isPresenting) return;
+  const rt = new THREE.WebGLCubeRenderTarget(LOWMEM ? 128 : 256, { type: THREE.HalfFloatType });
+  const cc = new THREE.CubeCamera(0.05, 40, rt); cc.position.copy(SONDE); scene.add(cc);
+  // sans repères, contours ni cuisiniers ; plafond toujours là (caché en vue de dessus) et plafonniers LEDX fois plus forts : l'éclat de l'inox
+  const lv = labelGroup.visible, ev = edges.map(e => e.visible), lsv = lis.map(e => e.visible), cv = CUIS.visible, pl = [];
+  labelGroup.visible = CUIS.visible = false; edges.forEach(e => e.visible = false); lis.forEach(e => e.visible = false);
+  scene.traverse(o => { if (o.userData.ceiling && !o.visible) { o.visible = true; pl.push(o); } });
+  LEDS.forEach(m => m.emissiveIntensity *= LEDX);
+  cc.update(renderer, scene);
+  LEDS.forEach(m => m.emissiveIntensity /= LEDX); pl.forEach(o => o.visible = false);
+  labelGroup.visible = lv; CUIS.visible = cv; edges.forEach((e, i) => e.visible = ev[i]); lis.forEach((e, i) => e.visible = lsv[i]); scene.remove(cc);
+  const old = scene.environment; scene.environment = pmrem.fromCubemap(rt.texture).texture; rt.dispose(); if (old) old.dispose();
+  envPret = true;
+}
+
+// ---------- Marques (devis Gafic) : façade photo MY CHEF des fours, plaque ZANUSSI relevée sur la photo du fry-top 800, ailleurs le nom
+// de la marque en capitales neutres (pas de logo inventé : les logos d'origine restent à obtenir) ----------
+const FACADES = [], FAC_REEL = +(Q.get('fac') || 0.8), UP = new THREE.Vector3(0, 1, 0);
+// les marquages qui changent avec le bouton Variante : VAR_A = devis (façade MY CHEF du four neuf, plaques ZANUSSI), VAR_B = UNOX · CAPIC
+const VAR_A = new THREE.Group(), VAR_B = new THREE.Group(); VAR_B.visible = false; scene.add(VAR_A, VAR_B);
+const majLegende = () => { $('legend-list').innerHTML = Object.keys(NOMS).filter(c => REP[c]).sort().map(c => `<li data-code="${c}"><code>${c}</code><span>${NOMS[c]}${marque(c) ? ` <b class="mq">${marque(c)}</b>` : ''}${EXIST.has(c) ? ' <em>existant</em>' : ''}</span></li>`).join(''); };
+const LIGNE = [0.866, 0.5];   // normale (plan) de la ligne de cuisson : C09 à gauche, C04 à droite vue de face
+// cadre de porte relevé au rayon sur le modèle de Julie, à `off` mm du centre du repère ; photo 760 × 690 mm, de z 940 à 1630
+const FOURS = [{ c: 'C01', n: LIGNE, off: 336 }, { c: 'C12', n: [0, 1], off: 256 }];
+const PLAQUES = { C04: 400, C05: 800, C06: 400, C07: 800, C08: 400, C09: 400 };   // largeur des éléments ZANUSSI ; plaque à 75 mm du bord droit
+// nom de marque : [hauteur (mm, 0 : 70 mm sous le dessus), normale de la face quand ce n'est pas celle qui regarde le centre de la pièce,
+// départ du rayon (mm du centre)] ; C03 sous la ligne et C21 (îlot, côté ligne) regardent l'allée des cuisiniers
+const LETTRES = { C03: [580, LIGNE, 650], C13: [900], C14: [0], C17: [0], C18: [0], C19: [950], C21: [0, [-0.866, -0.5], 450], P01: [0], L02: [800] };
+function quad(w, h) {   // plan w × h mm, v inversé : images et canvas posés sans retournement (flipY = false)
+  const g = new THREE.PlaneGeometry(w / 1000, h / 1000), uv = g.attributes.uv;
+  for (let i = 0; i < uv.count; i++) uv.setY(i, 1 - uv.getY(i));
+  return g;
+}
+function poser(g, mat, p, N, grp) {   // repère three ; x horizontal, haut de l'image vers le haut ; 1,5 mm devant la face
+  const x = new THREE.Vector3().crossVectors(UP, N).normalize(), y = new THREE.Vector3().crossVectors(N, x), m = new THREE.Mesh(g, mat);
+  m.quaternion.setFromRotationMatrix(new THREE.Matrix4().makeBasis(x, y, N)); m.position.copy(p).addScaledVector(N, 0.0015);
+  m.renderOrder = 1; (grp || scene).add(m);
+}
+function texture(src) { const t = src instanceof HTMLCanvasElement ? new THREE.CanvasTexture(src) : new THREE.Texture(src); t.colorSpace = THREE.SRGBColorSpace; t.flipY = false; t.anisotropy = MAXA; t.needsUpdate = true; return t; }
+const decal = map => new THREE.MeshBasicMaterial({ map, transparent: true, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 });
+function lettres(txt) {   // capitales grasses, encre foncée sur fond transparent ; rend [texture, largeur / hauteur]
+  const cv = document.createElement('canvas'), g = cv.getContext('2d'), f = '700 96px Figtree, Arial, sans-serif';
+  g.font = f; g.letterSpacing = '6px'; cv.width = Math.ceil(g.measureText(txt).width + 24); cv.height = 128;
+  g.font = f; g.letterSpacing = '6px'; g.fillStyle = '#1c1f22'; g.textBaseline = 'middle'; g.fillText(txt, 12, 66);
+  return [texture(cv), cv.width / cv.height];
+}
+function habiller(cible, imgs) {
+  const ray = new THREE.Raycaster(), t0 = performance.now(), rates = [];
+  const frappe = (X, Y, Z, a, b, bx) => {   // rayon horizontal (mm ; direction plan a, b) : première face vue de face, si elle est sur l'appareil
+    ray.set(P3(X, Y, Z), new THREE.Vector3(a, 0, -b).normalize());
+    for (const h of ray.intersectObjects(cible, false)) {
+      const N = h.face.normal.clone().transformDirection(h.object.matrixWorld);
+      if (N.dot(ray.ray.direction) > 0) continue;   // vue de dos (matériaux double face du modèle) : le rayon la traverse
+      const hX = h.point.x * 1000, hY = -h.point.z * 1000;
+      return hX < bx.min[0] - 60 || hX > bx.max[0] + 60 || hY < bx.min[1] - 60 || hY > bx.max[1] + 60 ? null : { p: h.point, N, X: hX, Y: hY };
+    }
+    return null;
+  };
+  if (imgs) {
+    const [photo, logo] = imgs.map(texture);
+    const mat = new THREE.MeshBasicMaterial({ map: photo, polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -1 }); FACADES.push(mat);
+    for (const f of FOURS) {
+      const b = REP[f.c]; if (!b) continue;
+      const [nx, ny] = f.n, N = new THREE.Vector3(nx, 0, -ny);
+      const p = P3((b.min[0] + b.max[0]) / 2 + nx * f.off, (b.min[1] + b.max[1]) / 2 + ny * f.off, 1285);
+      poser(quad(760, 690), mat, p, N, f.c === 'C12' ? VAR_A : undefined);   // C01 : four existant, sa façade MY CHEF ne change pas
+      if (f.c === 'C12') { const [t, r] = lettres('UNOX'); poser(quad(230, 230 / r), decal(t), p, N, VAR_B); }
+    }
+    const lm = decal(logo), lg = quad(111, 32), [nx, ny] = LIGNE;
+    const [tc, rc] = lettres('CAPIC'), gc = quad(140, 140 / rc), mc = decal(tc);
+    for (const [c, W] of Object.entries(PLAQUES)) {
+      const b = REP[c]; if (!b) continue;
+      const u = W / 2 - 75, h = frappe((b.min[0] + b.max[0]) / 2 + nx * 750 - ny * u, (b.min[1] + b.max[1]) / 2 + ny * 750 + nx * u, 705, -nx, -ny, b);
+      if (h) { poser(lg, lm, h.p, h.N, VAR_A); poser(gc, mc, h.p, h.N, VAR_B); } else rates.push(c);
+    }
+  }
+  for (const [c, [z, n, d]] of Object.entries(LETTRES)) {
+    const b = REP[c]; if (!b || !MARQUE[c]) continue;
+    const Z = z || b.max[2] - 70, cx = (b.min[0] + b.max[0]) / 2, cy = (b.min[1] + b.max[1]) / 2, l = Math.hypot(9800 - cx, 8000 - cy) || 1;
+    const [ux, uy] = n || [(9800 - cx) / l, (8000 - cy) / l], e = d || Math.abs(ux) * (b.max[0] - b.min[0]) / 2 + Math.abs(uy) * (b.max[1] - b.min[1]) / 2 + 300;
+    let h = frappe(cx + ux * e, cy + uy * e, Z, -ux, -uy, b);
+    if (h) {   // 2e rayon : la face touchée prise de front, depuis 20 cm, nom centré en largeur sur l'appareil
+      const k = Math.hypot(h.N.x, h.N.z) || 1, nx = h.N.x / k, ny = -h.N.z / k, f = (h.X - cx) * nx + (h.Y - cy) * ny + 200;
+      h = frappe(cx + nx * f, cy + ny * f, Z, -nx, -ny, b);
+    }
+    if (!h) { rates.push(c); continue; }
+    const [t, r] = lettres(MARQUE[c]); poser(quad(130, 130 / r), decal(t), h.p, h.N);
+  }
+  console.log(`[ocean] marques posées en ${Math.round(performance.now() - t0)} ms` + (rates.length ? ` ; manquées : ${rates.join(' ')}` : ''));
+}
+
+// ---------- Repères (sprites au-dessus de chaque appareil) ----------
+function makeLabel(code, b) {
+  const text = `${code}  ${nom(code)}`;
+  const cv = document.createElement('canvas'), g = cv.getContext('2d');
+  g.font = '600 44px Figtree, system-ui, sans-serif'; cv.width = Math.ceil(g.measureText(text).width + 48); cv.height = 76;
+  g.font = '600 44px Figtree, system-ui, sans-serif';
+  g.fillStyle = 'rgba(21,32,43,.86)'; g.beginPath(); g.roundRect(0, 0, cv.width, 76, 20); g.fill();
+  g.fillStyle = '#6fb1f0'; g.fillText(code, 22, 54); g.fillStyle = '#fff'; g.fillText(text.slice(code.length), 22 + g.measureText(code).width, 54);
+  const t = new THREE.CanvasTexture(cv); t.colorSpace = THREE.SRGBColorSpace;
+  const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: t, transparent: true, depthTest: false }));
+  const h = 0.11; sp.scale.set(h * cv.width / 76, h, 1); sp.userData.h = h; sp.userData.code = code;
+  sp.position.copy(P3((b.min[0] + b.max[0]) / 2, (b.min[1] + b.max[1]) / 2, Math.min(b.max[2], 2400) + 140)); sp.renderOrder = 10;
+  labelGroup.add(sp);
+}
+
+// ---------- Circulation : grille 5 cm, personne de 25 cm de rayon ----------
+// RCAM : garde réduite de la seule caméra de la visite guidée (cuisiniers et visite libre restent à R) ; le seul passage vers la
+// préparation et la laverie fait 29 cm entre les angles de l'étagère chauffante C16 et de la table roulante P05
+const R = 250, RCAM = 125;
+const blocked = (X, Y) => {
+  const i = Math.floor((X - G.x0) / G.cell), j = Math.floor((Y - G.y0) / G.cell);
+  if (i < 0 || j < 0 || i >= G.nx || j >= G.ny) return true;
+  const k = j * G.nx + i; return (G.bits[k >> 3] >> (7 - (k & 7))) & 1;
+};
+function freeAt(X, Y, r = R) {
+  if (!G) return true;
+  for (let dj = -r; dj <= r; dj += G.cell) for (let di = -r; di <= r; di += G.cell) if (di * di + dj * dj <= r * r && blocked(X + di, Y + dj)) return false;
+  return true;
+}
+function nearestFree(X, Y, r = R) {   // anneaux de 5 cm jusqu'à 2 m
+  if (!G || freeAt(X, Y, r)) return [X, Y];
+  for (let n = 1; n <= 40; n++) {
+    let best = null, bd = 1e9;
+    for (let a = 0; a < 64; a++) { const x = X + Math.cos(a * Math.PI / 32) * n * 50, y = Y + Math.sin(a * Math.PI / 32) * n * 50; if (freeAt(x, y, r)) { const d = Math.hypot(x - X, y - Y); if (d < bd) { bd = d; best = [x, y]; } } }
+    if (best) return best;
+  }
+  return [X, Y];
+}
+
+// ---------- Points de vue ----------
+let yaw = 0, pitch = 0, planMode = false, gyro = false, devOri = null, alphaOffset = 0, labelsBig = false, cur = 'chef';
+const pos = rig.position;
+const yawTo = (X, Y, tX, tY) => Math.atan2(-(tX - X) / 1000, (tY - Y) / 1000);   // three : regarder vers −z = +Y
+function stand(X, Y, tX, tY, p = -0.12) {
+  planMode = false; const [x, y] = nearestFree(X, Y);
+  pos.copy(P3(x, y)); pos.y = renderer.xr.isPresenting ? 0 : EYE; yaw = yawTo(x, y, tX, tY); pitch = p;
+}
+const VIEWS = {
+  chef:       () => stand(7900, 5250, 5600, 7300, -0.2),    // au bout de la ligne de cuisson, côté friteuses, regard le long des feux
+  entree:     () => stand(9415, 4450, 9300, 9000, -0.1),     // porte d'entrée, vers le fond
+  patisserie: () => stand(11300, 8650, 11300, 10300, -0.14),
+  laverie:    () => stand(9800, 11150, 8600, 12200, -0.14),
+  plan:       () => {
+    planMode = true; const port = innerHeight > innerWidth, w = ROOM.x1 - ROOM.x0, d = ROOM.y1 - ROOM.y0;
+    const [sw, sh] = port ? [d, w] : [w, d], tn = Math.tan(THREE.MathUtils.degToRad(camera.fov / 2));
+    const hgt = Math.max(sh, sw / camera.aspect) / 2 / tn * 1.06 / 1000 + 2.8;
+    pos.copy(P3((ROOM.x0 + ROOM.x1) / 2, (ROOM.y0 + ROOM.y1) / 2)); pos.y = hgt; yaw = port ? Math.PI / 2 : 0; pitch = -Math.PI / 2 + 0.001;
+  },
+};
+function setView(name) {
+  cur = name; VIEWS[name](); alphaOffset = 0;
+  scene.traverse(o => { if (o.userData.ceiling) o.visible = !planMode; });
+  if (planMode !== labelsBig) { const f = planMode ? 2.6 : 1 / 2.6; labelGroup.children.forEach(s => s.scale.multiplyScalar(f)); labelsBig = planMode; }
+  document.querySelectorAll('[data-view]').forEach(b => b.classList.toggle('on', b.dataset.view === name));
+  $('hint').textContent = planMode ? 'Vue de dessus · glisser pour pivoter · flèches pour décaler' : (isTouch ? 'Glisser pour regarder · joystick pour avancer' : 'Glisser pour regarder · Z Q S D ou flèches pour se déplacer');
+}
+function goTo(code) {   // devant l'appareil : on part du centre de la pièce vers lui et on s'arrête à ~1,2 m
+  const b = REP[code]; if (!b) return;
+  const cx = (b.min[0] + b.max[0]) / 2, cy = (b.min[1] + b.max[1]) / 2, mx = 9800, my = 8000;
+  const L = Math.hypot(cx - mx, cy - my) || 1, ux = (mx - cx) / L, uy = (my - cy) / L, ext = Math.max(b.max[0] - b.min[0], b.max[1] - b.min[1]) / 2;
+  let X = cx + ux * (ext + 900), Y = cy + uy * (ext + 900);
+  X = Math.min(Math.max(X, ROOM.x0 + 300), ROOM.x1 - 300); Y = Math.min(Math.max(Y, ROOM.y0 + 300), ROOM.y1 - 300);
+  cur = code; stand(X, Y, cx, cy, -Math.atan2(EYE * 1000 - (b.min[2] + b.max[2]) / 2, Math.hypot(cx - X, cy - Y) || 1) * 0.8);
+  scene.traverse(o => { if (o.userData.ceiling) o.visible = true; });
+  if (labelsBig) { labelGroup.children.forEach(s => s.scale.multiplyScalar(1 / 2.6)); labelsBig = false; }
+  document.querySelectorAll('[data-view]').forEach(b => b.classList.remove('on'));
+  if (innerWidth < 700) { $('legend').hidden = true; $('b-legend').classList.remove('on'); }
+  toast(`${code} · ${nom(code)}`);
+  ouvreFiche(code);
+}
+document.querySelectorAll('[data-view]').forEach(b => b.addEventListener('click', () => setView(b.dataset.view)));
+$('b-labels').addEventListener('click', e => { labelGroup.visible = !labelGroup.visible; e.currentTarget.classList.toggle('on', labelGroup.visible); });
+$('b-edges').addEventListener('click', e => { const v = !edges[0]?.visible; edges.forEach(l => l.visible = v); lis.forEach(l => l.visible = !PLAN && !v); e.currentTarget.classList.toggle('on', v); });
+$('b-variante').addEventListener('click', e => {
+  VARIANTE = !VARIANTE;
+  VAR_A.visible = !VARIANTE; VAR_B.visible = VARIANTE;
+  e.currentTarget.textContent = VARIANTE ? 'UNOX · CAPIC' : 'MY CHEF · ZANUSSI';
+  e.currentTarget.classList.toggle('on', VARIANTE);
+  labelGroup.clear(); for (const [code, b] of Object.entries(REP)) if (NOMS[code]) makeLabel(code, b);
+  if (ficheCode) ouvreFiche(ficheCode);   // la fiche affichée suit la variante (bandeau UNOX · CAPIC)
+  majLegende();
+  if (film) filmReplan();
+  if (PLAN) envPret = false; else captureEnv();   // l'inox reflète le marquage affiché
+});
+// bouton « Rendu réel » : dessin (lumière plate, sans compression des blancs : murs et carrelage restent blancs, contours) ↔ réel
+// (éclairage cuit du film, reflets de la cuisine dans l'inox ; AgX comme le film, ?tm=neutral ou aces pour comparer)
+const TM = { aces: THREE.ACESFilmicToneMapping, agx: THREE.AgXToneMapping, neutral: THREE.NeutralToneMapping }[Q.get('tm')] ?? THREE.AgXToneMapping;
+function setRendu(plan, contours = plan) {
+  PLAN = plan;
+  scene.background = PLAN ? FOND_PLAN : SKY;
+  renderer.domElement.style.filter = PLAN ? '' : 'contrast(1.07) saturate(1.1)';   // approche le look AgX « Punchy » du film
+  renderer.toneMapping = PLAN ? THREE.NoToneMapping : TM;
+  for (const m of RENDU) { const [me, ro, c] = m.userData.rendu[+PLAN]; m.metalness = me; m.roughness = ro; m.color.copy(c); }
+  for (const m of FACADES) m.color.setScalar(PLAN ? 0.97 : FAC_REEL);   // photos MY CHEF : sans compression des blancs en dessin
+  scene.traverse(o => { if (o.material) o.material.needsUpdate = true; });   // l'éclairage cuit change de shader (lmChunk)
+  edges.forEach(l => l.visible = contours); lis.forEach(l => l.visible = !PLAN && !contours); $('b-edges').classList.toggle('on', contours);
+  $('b-rendu').classList.toggle('on', !PLAN);
+  if (!PLAN && !envPret) { captureEnv(); captureEnv(); }
+}
+$('b-rendu').addEventListener('click', () => setRendu(!PLAN));
+// bouton « Murs » (choix de rendu, pas une prescription) : peinture du modèle, zellige 10 × 10 cm toute hauteur en trois coloris, ou inox
+// brossé en panneaux, sur la géométrie et l'éclairage cuit de la peinture ; ?murs=blanc|vert|bleu|inox
+const MURS = { peinture: 'peinture blanche', faience: 'faïence blanche 15 × 15 cm', blanc: 'zellige blanc naturel', vert: 'zellige vert émeraude', bleu: 'zellige bleu pétrole', inox: 'inox brossé en panneaux' };
+const MURS_COURT = { peinture: 'peinture', faience: 'faïence', blanc: 'zellige blanc', vert: 'zellige vert', bleu: 'zellige bleu', inox: 'inox' };
+const FIN = {}, ZTEX = {};
+let murs = 'peinture';
+function finition(kind) {
+  const z = kind !== 'murinox', m = z ? new THREE.MeshStandardMaterial() : new THREE.MeshPhysicalMaterial({ anisotropy: AN });
+  m.userData.rendu = z ? [[0, 0.1, new THREE.Color(1, 1, 1)], [0, 0.6, new THREE.Color(1, 1, 1)]] : [[1, 0.22, new THREE.Color().setScalar(0.76 * KI)], [0, 0.5, new THREE.Color(1, 1, 1)]];
+  const [me, ro, c] = m.userData.rendu[+PLAN]; m.metalness = me; m.roughness = ro; m.color.copy(c);
+  m.polygonOffset = true; m.polygonOffsetFactor = 1; m.polygonOffsetUnits = 1;   // les traits passent devant
+  RENDU.push(m); lmMat(m, LM[0], LM[1], kind); return m;
+}
+async function setMurs(f) {
+  if (!MURS[f] || !MUR.length) return;
+  const kind = f === 'peinture' ? '' : f === 'inox' ? 'murinox' : f === 'faience' ? 'faience' : 'zellige';
+  murs = f; $('b-murs').textContent = 'Murs : ' + MURS_COURT[f]; $('b-murs').classList.toggle('on', !!kind);
+  if (kind === 'zellige') {
+    const tx = async (n, srgb) => ZTEX[n] ??= await fetchP(`tex/zellige_${n}.jpg`).then(b => createImageBitmap(b, { colorSpaceConversion: srgb ? 'default' : 'none' })).then(b => {
+      const t = new THREE.Texture(b); t.colorSpace = srgb ? THREE.SRGBColorSpace : THREE.NoColorSpace; t.wrapS = t.wrapT = THREE.RepeatWrapping; t.flipY = false; t.anisotropy = MAXA; t.needsUpdate = true; return t;
+    });
+    const t = await Promise.all([tx(f, true), tx('nr', false)]).catch(() => null);
+    if (murs !== f) return;   // un autre clic entre-temps
+    if (!t) { toast('Texture du zellige indisponible'); return; }
+    [ZEL.tZel.value, ZEL.tZelN.value] = t;
+  }
+  // inox : repère de l'anisotropie tiré des UV (cf. load)
+  if (kind === 'murinox') for (const { geometry: g } of MUR) { if (!g.attributes.uvb) brossage(g); g.setAttribute('uv', g.attributes.uvb); }
+  const m = kind ? FIN[kind] ??= finition(kind) : null;
+  for (const o of MUR) { o.material = m || o.userData.peinture; o.material.needsUpdate = true; }
+  toast(`Murs : ${MURS[f]} (choix de rendu)`);
+  if (PLAN) envPret = false; else { captureEnv(); captureEnv(); }   // l'inox des appareils reflète les nouveaux murs
+}
+$('b-murs').addEventListener('click', () => { const k = Object.keys(MURS); setMurs(k[(k.indexOf(murs) + 1) % k.length]); });
+$('b-legend').addEventListener('click', e => { $('legend').hidden = !$('legend').hidden; e.currentTarget.classList.toggle('on', !$('legend').hidden); });
+$('b-help').addEventListener('click', () => { $('help').hidden = false; });
+$('b-start').addEventListener('click', () => { $('help').hidden = true; });
+$('b-start').disabled = true;
+if (isTouch) { $('joy').hidden = false; $('b-gyro').hidden = false; }
+
+// ---------- Fiches équipements : tap sur un appareil (boîte de bake/reperes.json) ou son étiquette → panneau ----------
+// Données : assets/fiches/equipements.json (généré par tools/fiches_data.py), champs du schéma library_equipment
+// (doc conception everpro) pour brancher la bibliothèque Supabase plus tard sans réécriture. Chargé à la première
+// ouverture seulement : rien au chargement initial. Un champ absent est masqué, jamais deviné.
+const fiche = $('fiche');
+let FICHES = null, PRIX = null, ficheCode = null, ficheJeton = 0;   // jeton : une ouverture qui attend ses données est abandonnée si la fiche a été fermée ou remplacée entre-temps
+const COM = Q.has('com');   // mode commercial : prix lus dans assets/fiches/prix.json, fichier jamais committé (absent du site public)
+function ficheData() {
+  return FICHES ??= Promise.all([
+    fetch(`assets/fiches/equipements.json?v=${AV}`).then(r => r.json()),
+    COM ? fetch('assets/fiches/prix.json').then(r => r.ok ? r.json() : null).catch(() => null) : null,
+  ]).then(([d, px]) => {
+    PRIX = px && px.prix_ht || null;
+    const m = new Map();
+    for (const f of d.equipements) { if (!m.has(f.repere)) m.set(f.repere, []); m.get(f.repere).push(f); }
+    return m;
+  });
+}
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const kw = v => String(v).replace('.', ',') + ' kW';
+function ficheHTML(f, premier) {
+  const file = k => (f.files || []).find(x => x.kind === k);
+  const rows = [];
+  if (f.brand) rows.push(['Marque', esc(f.brand.label)]);
+  if (f.manufacturer_reference) rows.push(['Référence', esc(f.manufacturer_reference)]);
+  const dims = [['L', f.largeur_mm], ['P', f.profondeur_mm], ['H', f.hauteur_mm]].filter(d => d[1]);
+  if (dims.length) rows.push(['Dimensions', dims.map(d => d[0] + ' ' + d[1]).join(' × ') + ' mm']);
+  if (f.energie) rows.push(['Énergie', { electrique: 'Électrique', gaz: 'Gaz', mixte: 'Mixte', sans: 'Sans énergie' }[f.energie] || esc(f.energie)]);
+  if (f.puissance_elec_kw) rows.push(['Puissance élec.', kw(f.puissance_elec_kw)]);
+  if (f.puissance_gaz_kw) rows.push(['Puissance gaz', kw(f.puissance_gaz_kw)]);
+  if (PRIX && f.manufacturer_reference in PRIX) rows.push(['Prix HT', Number(PRIX[f.manufacturer_reference]).toLocaleString('fr-FR') + ' €']);
+  const photo = file('photo'), ft = file('ft_pdf');
+  return `<section><h3>${premier ? `<code>${esc(f.repere)}</code>` : ''}${esc(f.label)}${EXIST.has(f.repere) ? '<em>existant</em>' : ''}</h3>
+${rows.length ? '<dl>' + rows.map(r => `<dt>${r[0]}</dt><dd>${r[1]}</dd>`).join('') + '</dl>' : ''}
+${photo ? `<img src="${esc(photo.path)}" alt="${esc(f.label)}" loading="lazy">` : ''}
+${ft ? `<a class="ftl" href="${esc(ft.path)}" target="_blank" rel="noopener">📄 Fiche technique (PDF)</a>` : ''}</section>`;
+}
+async function ouvreFiche(code) {
+  const j = ++ficheJeton, lst0 = (await ficheData()).get(code);
+  if (j !== ficheJeton || (!lst0 && !NOMS[code])) return;
+  ficheCode = code;
+  // la nomenclature porte les deux chiffrages : params.variante 'zanussi' (devis de base) / 'capic' (variante) ; sans
+  // params.variante, l'équipement est commun. On ne montre que ce qui correspond au bouton Variante.
+  const aCapic = lst0 && lst0.some(f => f.params && f.params.variante === 'capic');
+  let corps;
+  if (VARIANTE && MARQUE_B[code] && !aCapic) {   // repère basculé sans fiche variante (four UNOX) : rien n'est repris du devis de base
+    corps = `<section><h3><code>${esc(code)}</code>${esc(NOMS[code])}</h3>
+<p class="var">Variante <b>${esc(MARQUE_B[code])}</b> affichée : fiche détaillée à venir (référence et cotes non documentées ici). Repasser en MY CHEF · ZANUSSI pour la fiche du devis de base.</p></section>`;
+  } else if (lst0) {
+    const want = VARIANTE ? 'capic' : 'zanussi';
+    const lst = lst0.filter(f => { const v = f.params && f.params.variante; return !v || v === want; });
+    // l'appareil principal (celui que nomme le repère) avant son meuble support : préfixe du nom
+    // du repère d'abord, puis les labels « … sous … » (soubassement, placard porteur) en queue
+    const prem = (NOMS[code] || '').toLowerCase().split(/[^a-zà-ÿ0-9]+/)[0] || '';
+    const score = f => { const l = f.label.toLowerCase();
+      return (prem && l.startsWith(prem) ? -100 : 0) + (/\bsous\b/.test(l) ? 50 : 0); };
+    const tri = [...lst].sort((a, b) => score(a) - score(b));
+    corps = tri.map((f, i) => ficheHTML(f, !i)).join('');
+  } else {   // repère de la visite sans ligne de nomenclature (matériel existant conservé)
+    corps = `<section><h3><code>${esc(code)}</code>${esc(NOMS[code])}${EXIST.has(code) ? '<em>existant</em>' : ''}</h3></section>`;
+  }
+  fiche.innerHTML = '<button class="fx" aria-label="Fermer la fiche">✕</button>' + corps;
+  fiche.querySelector('.fx').addEventListener('click', fermeFiche);
+  fiche.hidden = false; fiche.scrollTop = 0; document.body.classList.add('fiche');
+  $('legend').hidden = true; $('b-legend').classList.remove('on');
+}
+function fermeFiche() { ficheJeton++; fiche.hidden = true; ficheCode = null; document.body.classList.remove('fiche'); }
+addEventListener('keydown', e => { if (e.code === 'Escape' && !fiche.hidden) fermeFiche(); });
+
+// tap court (pas un glisser) : rayon vers les boîtes des repères, et les étiquettes quand elles sont affichées
+const pickRay = new THREE.Raycaster(), pickV = new THREE.Vector2(), pickBox = new THREE.Box3(), pickP = new THREE.Vector3();
+function pick(x, y) {
+  if (!ready) return null;
+  pickV.set(x / innerWidth * 2 - 1, -(y / innerHeight) * 2 + 1);
+  pickRay.setFromCamera(pickV, camera);
+  let best = null, bd = Infinity;
+  if (labelGroup.visible) {
+    const hit = pickRay.intersectObjects(labelGroup.children)[0];
+    if (hit) { best = hit.object.userData.code; bd = hit.distance; }
+  }
+  for (const [code, b] of Object.entries(REP)) {
+    if (!NOMS[code]) continue;
+    pickBox.min.set(b.min[0] / 1000, b.min[2] / 1000, -b.max[1] / 1000);   // mm Blender → m three (cf. P3)
+    pickBox.max.set(b.max[0] / 1000, b.max[2] / 1000, -b.min[1] / 1000);
+    const p = pickRay.ray.intersectBox(pickBox, pickP);
+    if (p) { const d = p.distanceTo(pickRay.ray.origin); if (d < bd) { bd = d; best = code; } }
+  }
+  return best;
+}
+let tapX = 0, tapY = 0, tapT = 0;
+canvas.addEventListener('pointerdown', e => { tapX = e.clientX; tapY = e.clientY; tapT = performance.now(); });
+canvas.addEventListener('pointerup', e => {
+  if (film || document.body.classList.contains('film') || performance.now() - son.ferme < 400) return;   // ni pendant la visite, ni à la fin d'un double-clic qui a fermé le choix du son
+  if (Math.hypot(e.clientX - tapX, e.clientY - tapY) > 8 || performance.now() - tapT > 500) return;
+  const code = pick(e.clientX, e.clientY);
+  if (code) ouvreFiche(code); else fermeFiche();
+});
+
+// regarder : glisser sur la vue (souris, trackpad et doigt « tirent le monde », comme aux Halles)
+let lookId = null, lx = 0, ly = 0, lookTouch = false;
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+canvas.addEventListener('pointerdown', e => { if (lookId !== null) return; lookId = e.pointerId; lookTouch = e.pointerType === 'touch'; lx = e.clientX; ly = e.clientY; canvas.setPointerCapture(e.pointerId); });
+canvas.addEventListener('pointermove', e => {
+  if (e.pointerId !== lookId) return; const dx = e.clientX - lx, dy = e.clientY - ly; lx = e.clientX; ly = e.clientY;
+  const k = lookTouch ? 0.0048 : 0.0035;
+  if (gyro) alphaOffset += dx * k; else yaw += dx * k;
+  if (!gyro && !planMode) pitch = clamp(pitch + dy * k, -1.45, 1.45);
+});
+const endLook = e => { if (e.pointerId === lookId) lookId = null; };
+canvas.addEventListener('pointerup', endLook); canvas.addEventListener('pointercancel', endLook);
+
+// se déplacer : touches (positions physiques : ZQSD en AZERTY, WASD en QWERTY) + joystick
+const keys = {};
+addEventListener('keydown', e => { keys[e.code] = true; if (e.code === 'Escape' && film) filmStop(false);if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Space'].includes(e.code)) e.preventDefault(); });
+addEventListener('keyup', e => { keys[e.code] = false; });
+addEventListener('blur', () => { for (const k in keys) keys[k] = false; });
+const joy = $('joy'), knob = joy.querySelector('.knob'); let joyId = null; const jv = { x: 0, y: 0 };
+function joyUpd(e) { const r = joy.getBoundingClientRect(); let dx = e.clientX - (r.left + r.width / 2), dy = e.clientY - (r.top + r.height / 2); const max = r.width / 2 - 20, len = Math.hypot(dx, dy); if (len > max) { dx *= max / len; dy *= max / len; } jv.x = dx / max; jv.y = dy / max; knob.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`; }
+joy.addEventListener('pointerdown', e => { joyId = e.pointerId; joy.setPointerCapture(e.pointerId); joyUpd(e); });
+joy.addEventListener('pointermove', e => { if (e.pointerId === joyId) joyUpd(e); });
+const joyEnd = e => { if (e.pointerId === joyId) { joyId = null; jv.x = jv.y = 0; knob.style.transform = 'translate(-50%,-50%)'; } };
+joy.addEventListener('pointerup', joyEnd); joy.addEventListener('pointercancel', joyEnd);
+
+// gyroscope (page servie en HTTPS au premier niveau ; le cadre de l'artefact peut le refuser)
+const gq = new THREE.Quaternion(), gE = new THREE.Euler(), q1 = new THREE.Quaternion(-Math.SQRT1_2, 0, 0, Math.SQRT1_2), zee = new THREE.Vector3(0, 0, 1), q0 = new THREE.Quaternion();
+const onDev = e => { if (e.alpha != null) devOri = e; };
+$('b-gyro').addEventListener('click', async e => {
+  const btn = e.currentTarget;
+  if (gyro) { gyro = false; devOri = null; removeEventListener('deviceorientation', onDev); btn.classList.remove('on'); camera.quaternion.identity(); return; }
+  try {
+    if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') { const r = await DeviceOrientationEvent.requestPermission(); if (r !== 'granted') throw new Error('refusé'); }
+    addEventListener('deviceorientation', onDev); gyro = true; alphaOffset = yaw; btn.classList.add('on');
+    setTimeout(() => { if (gyro && !devOri) { gyro = false; removeEventListener('deviceorientation', onDev); btn.classList.remove('on'); toast('Gyroscope indisponible ici. Glisse le doigt pour regarder.'); } }, 1800);
+  } catch (err) { toast('Gyroscope refusé. Glisse le doigt pour regarder.'); }
+});
+
+// casque VR (affiché seulement si WebXR est disponible)
+if (navigator.xr && navigator.xr.isSessionSupported) {
+  navigator.xr.isSessionSupported('immersive-vr').then(ok => { if (ok) $('vrwrap').appendChild(VRButton.createButton(renderer)); }).catch(() => {});
+  renderer.xr.addEventListener('sessionstart', () => { if (planMode) setView('chef'); pos.y = 0; pitch = 0; camera.quaternion.identity(); });
+  renderer.xr.addEventListener('sessionend', () => { pos.y = EYE; });
+}
+
+// ---------- Installation comme application (GitHub Pages seulement) ----------
+const onPages = /github\.io$/.test(location.hostname), standalone = navigator.standalone || matchMedia('(display-mode: standalone)').matches;
+const isIOS = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+if ('serviceWorker' in navigator && onPages) navigator.serviceWorker.register('sw.js').catch(() => {});
+let installEvt = null;
+addEventListener('beforeinstallprompt', e => { e.preventDefault(); installEvt = e; if (!standalone) $('b-install').hidden = false; });
+addEventListener('appinstalled', () => { $('b-install').hidden = true; installEvt = null; toast('Application installée : lance-la depuis l\'écran d\'accueil ou le Dock.'); });
+if (onPages && isIOS && !standalone) $('b-install').hidden = false;
+$('b-install').addEventListener('click', async () => {
+  if (installEvt) { installEvt.prompt(); const r = await installEvt.userChoice; if (r.outcome === 'accepted') $('b-install').hidden = true; installEvt = null; }
+  else toast(isIOS ? 'Safari : bouton Partager (carré avec flèche) → « Sur l\'écran d\'accueil » → Ajouter.' : 'Chrome : icône « Installer » à droite de la barre d\'adresse. Safari Mac : menu Fichier → Ajouter au Dock.');
+});
+
+// ---------- Visite guidée : calculée en direct dans la maquette avec les options en cours (variante, murs, cuisiniers).
+// Phase 1 : tour d'ensemble continu (la caméra suit les allées, A* de la grille des collisions). Phase 2 : arrêt sur chaque
+// appareil principal, cadrage calculé, fiche équipement affichée. Pause / Suivant / Quitter ; « Enregistrer la visite » en fait une vidéo ----------
+// Caméra posée : toujours à CZ du sol, inclinaison fixe pendant tout un plan (celle d'un arrêt est calculée une fois, pour cadrer l'appareil ;
+// elle ne change que sous le fondu au noir), trajets à la garde RCAM. Arrêt : A, B caméra [x, y] ; TA, TB regard [x, y, z] ; p inclinaison imposée (rad)
+const FILM = [
+  { v: 'entree', m: 'Cuisine OCÉAN · Anglet', n: "Implantation EVI PRO d'après le plan ZANUSSI du 04/11/26", d: 7, p: -0.1, A: [9415, 4450], B: [9415, 5050], TA: [9550, 9000], TB: [9150, 9000] },
+  { tour: true, m: "Tour d'ensemble", n: 'La cuisine en un passage continu, puis chaque appareil en détail' },
+  { c: 'C12', A: [9560, 6040], B: [9400, 5860], TA: [8640, 4780, 1330], TB: [8600, 4800, 1330] },   // de trois-quarts par-dessus l'îlot (82 cm) : l'allée devant le four ne laisse que 50 cm de recul
+  { c: 'C08' }, { c: 'C05' }, { c: 'C01' },
+  { c: 'C03', A: [7000, 7750], B: [6900, 7550], TA: [6250, 6900, 380], TB: [6450, 6550, 380] },   // de trois-quarts depuis le bout de l'allée : l'îlot masque la vue de face
+  { c: 'C18' }, { c: 'C19' }, { c: 'C13' },
+  { c: 'C17', A: [6000, 7600], B: [6100, 7700], TA: [6800, 8550, 800], TB: [6900, 8550, 800] },   // côté bacs
+  { c: 'P01' },
+  { c: 'L02', A: [10250, 10950], B: [10050, 11100], TA: [9000, 12050, 950], TB: [9250, 12050, 950] },   // le rayonnage L04 empêche de reculer en face
+  { v: 'fin', m: 'EVI PRO', n: 'Image de synthèse non contractuelle', d: 8, fov: 66, p: -0.14, A: [9650, 5900], B: [9450, 4750], TA: [7200, 7200], TB: [7300, 7300] },   // recul vers la porte, toute la cuisine dans le cadre
+];
+const DUREE = 9, FONDU = 0.6, FOV_FILM = 56, EV_FILM = +(Q.get('evf') || 1), mix = (a, b, k) => a.map((v, i) => v + (b[i] - v) * k);
+const CZ = 1600, PITCH_TOUR = -0.2, V_TOUR = 450, W_TOUR = 0.18, A_TOUR = 150, POSE = 1;   // hauteur (mm), inclinaison du tour ; vitesse ≤ 0,45 m/s, rotation ≤ 0,18 rad/s (≈ 10°/s), élan 0,15 m/s² ; immobile 1 s au début et à la fin du tour
+// Tour d'ensemble (phase 1) : points de passage + cible du regard à chaque point ([x, y] caméra, [tx, ty] regard, mm). Le regard tourne
+// sans à-coup d'un point à l'autre ; le tour passe entre C16 et P05 (garde RCAM) et finit à l'entrée de la laverie, face à la plonge.
+const TOUR = [
+  [[9415, 4800], [9450, 9300]],    // passé la porte : l'allée jusqu'au fond
+  [[9450, 5900], [7000, 6400]],    // la ligne de cuisson, derrière l'îlot
+  [[9550, 7000], [6800, 7300]],    // la hotte et le fourneau
+  [[9750, 8250], [11900, 9400]],   // en haut de l'allée : panoramique vers le garde-manger et la pâtisserie
+  [[9530, 9400], [8700, 10600]],   // le passage vers la préparation
+  [[8700, 9850], [7700, 11000]],   // la préparation, vers la plonge
+  [[8800, 10350], [9100, 12300]],  // à l'entrée de la laverie : la plonge et le lave-vaisselle à 1,5-2 m (plus loin, le capot boucherait l'image)
+];
+function priseTour() {   // A* entre les points de passage (jamais à travers un meuble), polyligne adoucie, regard lissé, vitesse réglée pour que le regard tourne lentement
+  if (!G) return null;
+  const brut = [], wA = [];   // points bruts, index du point de chaque étape
+  let prev = null;
+  for (const [w] of TOUR) {
+    const p = nearestFree(w[0], w[1], RCAM);
+    if (!prev) brut.push(p);
+    else if (p[0] !== prev[0] || p[1] !== prev[1]) brut.push(...chemin(prev, p, RCAM).slice(1));
+    wA.push(brut.length - 1); prev = p;
+  }
+  const cumB = [0];
+  for (let i = 1; i < brut.length; i++) cumB.push(cumB[i - 1] + Math.hypot(brut[i][0] - brut[i - 1][0], brut[i][1] - brut[i - 1][1]));
+  const LB = cumB.at(-1) || 1, n = Math.max(8, Math.round(LB / 100));
+  const surB = x => { let i = 1; while (i < cumB.length - 1 && cumB[i] < x) i++; const a = brut[i - 1], b = brut[i], k = (x - cumB[i - 1]) / ((cumB[i] - cumB[i - 1]) || 1); return [a[0] + (b[0] - a[0]) * k, a[1] + (b[1] - a[1]) * k]; };
+  const lisse = (src, w0) => src.map((_, i) => {   // moyenne glissante ± w points (10 cm), réduite là où elle approcherait un meuble à moins de RCAM
+    for (let w = w0; w > 0; w--) { let x = 0, y = 0; for (let j = -w; j <= w; j++) { const q = src[clamp(i + j, 0, n)]; x += q[0]; y += q[1]; } x /= 2 * w + 1; y /= 2 * w + 1; if (freeAt(x, y, RCAM)) return [x, y]; }
+    return src[i];
+  });
+  const pts = lisse(lisse(Array.from({ length: n + 1 }, (_, i) => surB(LB * i / n)), 6), 3);
+  const cum = [0];
+  for (let i = 1; i <= n; i++) cum.push(cum[i - 1] + Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]));
+  const L = cum[n] || 1, sW = wA.map(i => cumB[i] / LB * L);   // abscisse de chaque point de passage
+  // cap : vers la cible interpolée entre deux points de passage, rendu continu (sans saut de 2π) puis lissé (gaussienne σ = 50 cm)
+  let yw = pts.map((p, i) => {
+    let j = 0; while (j < sW.length - 2 && sW[j + 1] <= cum[i]) j++;
+    const k = clamp((cum[i] - sW[j]) / ((sW[j + 1] - sW[j]) || 1), 0, 1), T = mix(TOUR[j][1], TOUR[j + 1][1], 0.5 - 0.5 * Math.cos(Math.PI * k));
+    return yawTo(p[0], p[1], T[0], T[1]);
+  });
+  for (let i = 1; i <= n; i++) yw[i] = yw[i - 1] + Math.atan2(Math.sin(yw[i] - yw[i - 1]), Math.cos(yw[i] - yw[i - 1]));
+  yw = yw.map((_, i) => { let s = 0, c = 0; for (let j = -15; j <= 15; j++) { const g = Math.exp(-j * j / 50); s += yw[clamp(i + j, 0, n)] * g; c += g; } return s / c; });
+  // vitesse ≤ V_TOUR, abaissée là où le regard tournerait plus vite que W_TOUR ; élan A_TOUR au départ, à l'arrivée et à chaque changement
+  const vw = i => W_TOUR * ((cum[i + 1] - cum[i]) || 1) / (Math.abs(yw[i + 1] - yw[i]) || 1e-9);   // vitesse à laquelle le regard tourne à W_TOUR sur le segment i → i+1
+  const v = pts.map((_, i) => Math.min(V_TOUR, i > 0 ? vw(i - 1) : Infinity, i < n ? vw(i) : Infinity));
+  v[0] = v[n] = 0;
+  for (let i = 1; i <= n; i++) v[i] = Math.min(v[i], Math.sqrt(v[i - 1] ** 2 + 2 * A_TOUR * (cum[i] - cum[i - 1])));
+  for (let i = n - 1; i >= 0; i--) v[i] = Math.min(v[i], Math.sqrt(v[i + 1] ** 2 + 2 * A_TOUR * (cum[i + 1] - cum[i])));
+  const t = [POSE];   // horaire de passage à chaque point
+  for (let i = 1; i <= n; i++) t.push(t[i - 1] + 2 * (cum[i] - cum[i - 1]) / ((v[i - 1] + v[i]) || 1e-9));
+  return { tour: true, pts, yw, t, d: t[n] + POSE };
+}
+function poseTour(pr, k) {   // position et cap à l'instant k·d de l'horaire ; hauteur et inclinaison fixes
+  planMode = false;
+  const { pts, yw, t } = pr, tau = clamp(k * pr.d, t[0], t.at(-1));
+  let lo = 0, hi = t.length - 1;
+  while (hi - lo > 1) { const m = (lo + hi) >> 1; if (t[m] <= tau) lo = m; else hi = m; }
+  const q = (tau - t[lo]) / ((t[hi] - t[lo]) || 1), a = pts[lo], b = pts[hi];
+  pos.copy(P3(a[0] + (b[0] - a[0]) * q, a[1] + (b[1] - a[1]) * q)); pos.y = CZ / 1000;
+  yaw = yw[lo] + (yw[hi] - yw[lo]) * q; pitch = PITCH_TOUR;
+}
+function prise(sh) {   // plan d'un arrêt : trajet imposé si A est donné, sinon calculé ; inclinaison fixe qui cadre l'appareil à mi-plan
+  if (sh.tour) return priseTour();
+  let pr = sh;
+  if (!sh.A) {
+    const b = REP[sh.c]; if (!b) return null;
+    const cx = (b.min[0] + b.max[0]) / 2, cy = (b.min[1] + b.max[1]) / 2, ext = Math.max(b.max[0] - b.min[0], b.max[1] - b.min[1]) / 2;
+    const tz = Math.min(Math.max((b.min[2] + b.max[2]) / 2 + 100, b.max[2] - 250), 1300);   // vise le dessus de l'appareil plutôt que son pied
+    let l = Math.hypot(9800 - cx, 8000 - cy) || 1;   // point de vue de goTo, puis axe appareil → caméra
+    const [sx, sy] = nearestFree(clamp(cx + (9800 - cx) / l * (ext + 900), ROOM.x0 + 300, ROOM.x1 - 300), clamp(cy + (8000 - cy) / l * (ext + 900), ROOM.y0 + 300, ROOM.y1 - 300), RCAM);
+    l = Math.hypot(sx - cx, sy - cy) || 1; const ux = (sx - cx) / l, uy = (sy - cy) / l;
+    // lente approche : droit sur l'appareil, de biais ou de côté, dans le sens où il y a le plus de place (jamais à travers un meuble) ;
+    // un peu de recul au départ si possible ; le regard glisse moins que la caméra (panoramique doux)
+    const libre = (P, Q) => { const m = Math.ceil(Math.hypot(Q[0] - P[0], Q[1] - P[1]) / 50) || 1; for (let i = 0; i <= m; i++) if (!freeAt(P[0] + (Q[0] - P[0]) * i / m, P[1] + (Q[1] - P[1]) * i / m, RCAM)) return false; return true; };
+    const loin = (dx, dy, hmax) => { let h = hmax; while (h > 0 && !libre([sx, sy], [sx + dx * h, sy + dy * h])) h -= 25; return h; };
+    let m = null;
+    for (const deg of [0, 30, -30, 60, -60, 90, -90]) {   // 0 = droit sur l'appareil, ±90 = de côté
+      const r = deg * Math.PI / 180, dx = -ux * Math.cos(r) + uy * Math.sin(r), dy = -ux * Math.sin(r) - uy * Math.cos(r), h = loin(dx, dy, 300), sc = h * (Math.abs(deg) > 60 ? 0.8 : 1);
+      if (!m || sc > m.sc) m = { sc, dx, dy, h };
+    }
+    const h0 = loin(-m.dx, -m.dy, 150), A = [sx - m.dx * h0, sy - m.dy * h0], B = [sx + m.dx * m.h, sy + m.dy * m.h];
+    const cote = Q => ((Q[0] - sx) * uy - (Q[1] - sy) * ux) * 0.4;   // part latérale du trajet, reportée à 40 % sur le regard
+    pr = { A, B, TA: [cx + uy * cote(A), cy - ux * cote(A), tz], TB: [cx + uy * cote(B), cy - ux * cote(B), tz] };
+  }
+  const P = mix(pr.A, pr.B, 0.5), T = mix(pr.TA, pr.TB, 0.5);
+  return { ...pr, pitch: pr.p ?? clamp(-Math.atan2(CZ - T[2], Math.hypot(T[0] - P[0], T[1] - P[1])), -0.55, -0.06) };
+}
+function filmPose(pr, k) {   // arrêt : glissement lent, hauteur et inclinaison fixes
+  const e = 0.5 - 0.5 * Math.cos(Math.PI * k);
+  planMode = false;
+  const P = mix(pr.A, pr.B, e), T = mix(pr.TA, pr.TB, e);
+  pos.copy(P3(P[0], P[1])); pos.y = CZ / 1000;
+  yaw = yawTo(P[0], P[1], T[0], T[1]); pitch = pr.pitch;
+}
+let film = null, rec = null;
+const filmT = () => ((film.pause ?? performance.now()) - film.t0) / 1000;   // horloge de la visite, gelée pendant la pause
+function filmStart(video, mode = null) {   // mode : 'musique', 'voix' (durée des arrêts = celle de leur voix) ou null (sans son)
+  if (!ready || film || renderer.xr.isPresenting) return;
+  const legende = !$('legend').hidden, ficheAvant = ficheCode;
+  fermeFiche();
+  film = { t0: performance.now(), pause: null, plans: FILM.map(sh => { const pr = prise(sh); return [sh, pr, dureeEtape(sh, pr, mode)]; }).filter(p => p[1]), i: -1, fondu: 1, capA: 0, cap: ['', '', ''], fmap: null, fcard: null,
+    avant: { cur, pos: pos.clone(), yaw, pitch, plan: PLAN, contours: !!edges[0]?.visible, labels: labelGroup.visible, ev: renderer.toneMappingExposure, legende, fiche: ficheAvant, retour: video ? 'b-video' : 'b-film' } };
+  ficheData().then(m => { if (!film) return; film.fmap = m; const p = film.plans[film.i]; if (p) majFCard(p[0]); });   // fiches des arrêts (écran + vidéo)
+  if (PLAN || film.avant.contours) setRendu(false, false);   // la visite montre le rendu réel
+  labelGroup.visible = false; camera.quaternion.identity(); renderer.toneMappingExposure *= EV_FILM;
+  scene.traverse(o => { if (o.userData.ceiling) o.visible = true; });   // plafonds remis si l'on partait de la vue en plan
+  document.body.classList.add('film'); $('film').hidden = false;
+  majFilmUI();
+  sonDebut(mode);
+  if (video) recStart();
+}
+function filmStop(fini) {
+  if (!film) return; const a = film.avant, focus = $('film').contains(document.activeElement); T0C = performance.now() - filmT() * 1000; film = null;   // les cuisiniers continuent là où la visite les laisse (pause comprise)
+  fermeFiche();
+  sonFin();
+  document.body.classList.remove('film'); $('film').hidden = true; $('cap').classList.remove('show');
+  if (focus) $(a.retour).focus({ preventScroll: true });   // le focus était sur une commande de la visite, désormais masquée : il revient au bouton de lancement
+  camera.fov = 64; camera.updateProjectionMatrix(); renderer.toneMappingExposure = a.ev;
+  if (a.plan || a.contours) setRendu(a.plan, a.contours);
+  labelGroup.visible = a.labels;
+  if (a.cur === 'plan') setView('plan');
+  else { scene.traverse(o => { if (o.userData.ceiling) o.visible = true; }); planMode = false; cur = a.cur; }
+  pos.copy(a.pos); yaw = a.yaw; pitch = a.pitch;   // là où était le visiteur, même éloigné du point de vue nommé
+  const leg = () => { if (a.legende) { $('legend').hidden = false; $('b-legend').classList.add('on'); } };   // Liste et fiche rendues comme avant la visite
+  if (a.fiche) ouvreFiche(a.fiche).then(leg); else leg();
+  recStop(fini);
+}
+function filmPause() {   // pause / reprise ; l'enregistrement vidéo et le son (contexte audio suspendu) marquent aussi la pause
+  if (!film) return;
+  if (film.pause) { film.t0 += performance.now() - film.pause; film.pause = null; if (rec?.mr.state === 'paused') rec.mr.resume(); if (son.mode) son.ctx.resume().catch(() => {}); }
+  else { film.pause = performance.now(); if (rec?.mr.state === 'recording') rec.mr.pause(); if (son.mode) son.ctx.suspend().catch(() => {}); }
+  $('f-pause').textContent = film.pause ? '▶ Reprendre' : '⏸ Pause';
+}
+function filmVa(s) {   // place l'horloge au début d'une étape (s) ; en pause, juste après son fondu d'entrée pour que l'image reste visible ; + 0,5 ms, sinon l'arrondi de now − s × 1000 la laisse parfois sur l'étape d'avant
+  const now = performance.now();
+  film.t0 = now - (s + (film.pause ? FONDU : 0)) * 1000 - 0.5;
+  if (film.pause) film.pause = now;
+}
+function filmNext() {   // saute au début de l'étape suivante (sur la dernière : fin de la visite)
+  if (!film) return;
+  const t = filmT(); let i = 0, t0 = 0;
+  while (i < film.plans.length && t >= t0 + film.plans[i][2]) t0 += film.plans[i++][2];
+  filmVa(t0 + (film.plans[i] ? film.plans[i][2] : 0));
+}
+function filmReplan() {   // variante changée pendant la visite : les étapes à venir prennent la durée de leur voix ; l'arrêt en cours, si sa voix change, reprend à son début avec la nouvelle
+  const t = filmT(); let i = 0, t0 = 0;
+  while (i < film.plans.length && t >= t0 + film.plans[i][2]) t0 += film.plans[i++][2];
+  if (i >= film.plans.length) return;
+  for (let k = i + 1; k < film.plans.length; k++) film.plans[k][2] = dureeEtape(film.plans[k][0], film.plans[k][1], son.mode);
+  const [sh, pr] = film.plans[i];
+  if (son.mode !== 'voix' || segVoix(sh) === segVoix(sh, !VARIANTE)) return;
+  film.plans[i][2] = dureeEtape(sh, pr, 'voix');
+  filmVa(t0);
+  son.vi = -1;   // sonEtape relance l'étape avec sa nouvelle voix
+}
+function majFilmUI() {   // les contrôles de la visite reflètent l'état des vrais boutons d'option
+  $('f-pause').textContent = film && film.pause ? '▶ Reprendre' : '⏸ Pause';
+  $('f-variante').textContent = $('b-variante').textContent; $('f-variante').classList.toggle('on', VARIANTE);
+  $('f-murs').textContent = $('b-murs').textContent; $('f-murs').classList.toggle('on', murs !== 'peinture');
+  $('f-cuis').classList.toggle('on', CUIS.visible);
+}
+function majFCard(sh) {   // lignes de la fiche dessinées dans la vidéo pendant l'arrêt : référence, dimensions, puissance — un champ absent est tu, jamais inventé
+  film.fcard = null;
+  if (!sh || !sh.c || !film.fmap) return;
+  const lst0 = film.fmap.get(sh.c), lignes = [];
+  if (VARIANTE && MARQUE_B[sh.c] && !(lst0 && lst0.some(f => f.params && f.params.variante === 'capic'))) {
+    lignes.push('Variante ' + MARQUE_B[sh.c] + ' : fiche détaillée à venir');
+  } else if (lst0) {
+    const want = VARIANTE ? 'capic' : 'zanussi';
+    const lst = lst0.filter(f => { const v = f.params && f.params.variante; return !v || v === want; });
+    const prem = (NOMS[sh.c] || '').toLowerCase().split(/[^a-zà-ÿ0-9]+/)[0] || '';
+    const score = f => { const l = f.label.toLowerCase(); return (prem && l.startsWith(prem) ? -100 : 0) + (/\bsous\b/.test(l) ? 50 : 0); };
+    const f = [...lst].sort((a, b) => score(a) - score(b))[0];
+    if (f) {
+      if (f.brand || f.manufacturer_reference) lignes.push([f.brand && f.brand.label, f.manufacturer_reference].filter(Boolean).join(' · '));
+      const dims = [['L', f.largeur_mm], ['P', f.profondeur_mm], ['H', f.hauteur_mm]].filter(d => d[1]);
+      if (dims.length) lignes.push(dims.map(d => d[0] + ' ' + d[1]).join(' × ') + ' mm');
+      const pw = [];
+      if (f.puissance_elec_kw) pw.push(String(f.puissance_elec_kw).replace('.', ',') + ' kW élec.');
+      if (f.puissance_gaz_kw) pw.push(String(f.puissance_gaz_kw).replace('.', ',') + ' kW gaz');
+      if (pw.length) lignes.push(pw.join(' + '));
+    }
+  }
+  if (lignes.length) film.fcard = lignes;
+}
+function filmStep() {
+  const t = filmT(); let i = 0, t0 = 0;
+  while (i < film.plans.length && t >= t0 + film.plans[i][2]) t0 += film.plans[i++][2];
+  if (i >= film.plans.length) return filmStop(true);
+  const tl = t - t0, [sh, pr, d] = film.plans[i];
+  if (i !== film.i) {
+    film.i = i; camera.fov = pr.fov || FOV_FILM; camera.updateProjectionMatrix();
+    film.cap = sh.c ? [sh.c, marque(sh.c) || '', NOMS[sh.c] + (EXIST.has(sh.c) ? ' (existant)' : '')] : ['', sh.m, sh.n];   // marque() : la légende suit la variante choisie
+    $('cap-c').textContent = film.cap[0]; $('cap-m').textContent = film.cap[1]; $('cap-n').textContent = film.cap[2];
+    if (sh.c) { ouvreFiche(sh.c); majFCard(sh); } else { fermeFiche(); film.fcard = null; }   // phase 2 : la fiche pendant l'arrêt
+    sonEtape(i, sh, tl, d);
+  }
+  if (pr.tour) poseTour(pr, tl / d); else filmPose(pr, tl / d);
+  film.fondu = clamp(Math.max(1 - tl / FONDU, 1 - (d - tl) / FONDU), 0, 1);
+  film.capA = sh.tour ? clamp((tl - 0.6) / 0.6, 0, 1) * clamp((5 - tl) / 0.6, 0, 1)   // sur le tour, le carton ne reste que quelques secondes
+    : clamp((tl - 0.5) / 0.6, 0, 1) * clamp((d - 0.8 - tl) / 0.6, 0, 1);
+  $('fade').style.opacity = film.fondu; $('cap').classList.toggle('show', film.capA > 0.5);
+}
+// vidéo : image composée 1280 × 720 (rendu, bandes, sous-titre, fondu), MP4 si le navigateur sait l'écrire, sinon WebM
+const MIME = ['video/mp4;codecs=avc1.640028', 'video/mp4', 'video/webm;codecs=vp9', 'video/webm'].find(m => window.MediaRecorder && MediaRecorder.isTypeSupported(m));
+const MIME_A = ['video/mp4;codecs=avc1.640028,mp4a.40.2', 'video/webm;codecs=vp9,opus', 'video/webm;codecs=vp8,opus'].find(m => window.MediaRecorder && MediaRecorder.isTypeSupported(m));   // avec la piste son
+if (MIME && canvas.captureStream && !isTouch && window.self === window.top) $('b-video').hidden = false;   // dans un cadre (artefact), le téléchargement est bloqué
+function recStart() {
+  const cv = document.createElement('canvas'); cv.width = 1280; cv.height = 720;
+  const pistes = cv.captureStream(30).getVideoTracks(), avecSon = !!(son.mode && MIME_A), mime = avecSon ? MIME_A : MIME;
+  if (avecSon) { son.dest = son.dest || son.ctx.createMediaStreamDestination(); son.maitre.connect(son.dest); pistes.push(...son.dest.stream.getAudioTracks()); }   // musique ou voix off dans la vidéo
+  const garde = avecSon && son.ctx.createConstantSource ? son.ctx.createConstantSource() : null;   // silence numérique continu vers l'enregistreur : sans source active, Chrome ne lui envoie plus rien et la voix prenait de l'avance sur l'image (31 s sur la visite voix off)
+  if (garde) { garde.offset.value = 0; garde.connect(son.dest); garde.start(); }
+  const mr = new MediaRecorder(new MediaStream(pistes), { mimeType: mime, videoBitsPerSecond: 2.2e6, audioBitsPerSecond: 128e3 }), parts = [];   // ≈ 19 Mo pour le film de 70 s : passe en pièce jointe
+  mr.ondataavailable = e => { if (e.data.size) parts.push(e.data); };
+  const g = cv.getContext('2d'), v = g.createRadialGradient(640, 360, 300, 640, 360, 790);   // vignettage, comme à l'écran
+  v.addColorStop(0, 'rgba(0,0,0,0)'); v.addColorStop(1, 'rgba(0,0,0,.38)');
+  mr.start(1000); rec = { g, v, mr, parts, mime, mode: avecSon ? son.mode : null, garde };
+  snapSize = [1280, 720]; canvas.style.objectFit = 'contain'; canvas.style.background = '#000';
+}
+function recFrame() {
+  const g = rec.g, W = 1280, H = 720, bh = Math.round(H * 0.09);
+  g.filter = canvas.style.filter || 'none'; g.drawImage(canvas, 0, 0, W, H); g.filter = 'none';   // le contraste du rendu réel, comme à l'écran
+  g.fillStyle = rec.v; g.fillRect(0, 0, W, H);
+  g.fillStyle = '#000'; g.fillRect(0, 0, W, bh); g.fillRect(0, H - bh, W, bh);
+  if (film.capA > 0) {
+    const [c, m, n] = film.cap, x = 52, y = H - bh - 18, h = c ? 96 : 80, fm = '700 36px Figtree, Arial, sans-serif', fn = '500 17px Figtree, Arial, sans-serif';
+    g.font = fm; g.letterSpacing = '2.5px'; const wm = g.measureText(m).width; g.font = fn; g.letterSpacing = '0px';
+    g.globalAlpha = film.capA; g.fillStyle = 'rgba(10,14,18,.6)'; g.beginPath(); g.roundRect(x - 16, y - h, Math.max(wm, g.measureText(n).width) + 32, h, 10); g.fill();
+    g.fillStyle = '#fff'; g.fillText(n, x, y - 12);
+    g.font = fm; g.letterSpacing = '2.5px'; g.fillText(m, x, y - 36);
+    if (c) { g.font = '600 11px Figtree, Arial, sans-serif'; g.letterSpacing = '1.3px'; g.globalAlpha = film.capA * 0.75; g.fillText(c, x, y - h + 22); }
+    g.globalAlpha = 1; g.letterSpacing = '0px';
+  }
+  if (film.fcard && film.capA > 0) {   // fiche de l'arrêt, redessinée dans la vidéo (le panneau DOM n'est pas capturé)
+    const Ls = film.fcard, wd = 300, x0 = W - 52 - wd, y0 = bh + 24, hh = 16 + Ls.length * 24 + 8;
+    g.globalAlpha = film.capA; g.fillStyle = 'rgba(10,14,18,.6)';
+    g.beginPath(); g.roundRect(x0, y0, wd, hh, 10); g.fill();
+    g.fillStyle = '#fff'; g.font = '500 15px Figtree, Arial, sans-serif';
+    Ls.forEach((l, i) => g.fillText(l, x0 + 16, y0 + 30 + i * 24, wd - 32));
+    g.globalAlpha = 1;
+  }
+  if (film.fondu > 0) { g.fillStyle = `rgba(0,0,0,${film.fondu})`; g.fillRect(0, 0, W, H); }
+}
+function recStop(garder) {
+  if (!rec) return; const r = rec; rec = null; snapSize = null; canvas.style.objectFit = canvas.style.background = '';
+  if (r.mode) try { son.maitre.disconnect(son.dest); } catch {}
+  if (r.garde) try { r.garde.stop(); r.garde.disconnect(); } catch {}
+  r.mr.onstop = () => {
+    if (!garder) return;
+    const a = document.createElement('a'); a.download = `OCEAN_Anglet_visite_${VARIANTE ? 'UNOX-CAPIC' : 'MYCHEF-ZANUSSI'}_murs-${murs}${r.mode ? (r.mode === 'voix' ? '_voix-off' : '_musique') : ''}.${r.mime.startsWith('video/mp4') ? 'mp4' : 'webm'}`;
+    a.href = URL.createObjectURL(new Blob(r.parts, { type: r.mime.split(';')[0] })); document.body.append(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 60000); toast(`Film enregistré : ${a.download} (Téléchargements)`);
+  };
+  r.mr.stop();
+}
+$('b-film').addEventListener('click', () => visite(false));   // le son (musique ou voix off) est demandé au lancement
+$('b-video').addEventListener('click', () => visite(true));
+$('f-pause').addEventListener('click', filmPause);
+$('f-next').addEventListener('click', filmNext);
+$('f-quit').addEventListener('click', () => filmStop(false));
+for (const [fb, b] of [['f-variante', 'b-variante'], ['f-murs', 'b-murs'], ['f-cuis', 'b-cuis']])
+  $(fb).addEventListener('click', () => { $(b).click(); if (film) film.i = -1; majFilmUI(); });   // la visite se met à jour au point en cours
+canvas.addEventListener('pointerdown', () => { if (film && performance.now() - film.t0 > 400) filmPause(); });   // un tap sur l'image met en pause / reprend (pas la fin d'un double-clic sur le choix du son)
+
+// ---------- Cuisiniers : chef, second, pâtissier et plongeur en service, pour juger des passages. Mise en scène (pas une organisation
+// de la brigade) en boucle de TC s calée sur les plans du film ; silhouettes simples éclairées par les reflets de la cuisine, trajets au
+// plus court entre les postes, à 25 cm des meubles (freeAt) ----------
+const CUIS = new THREE.Group(); CUIS.visible = Q.get('cuisiniers') === '1'; scene.add(CUIS);   // masqués par défaut ; ?cuisiniers=1 les affiche d'emblée
+$('b-cuis').classList.toggle('on', CUIS.visible);
+$('b-cuis').addEventListener('click', e => { CUIS.visible = !CUIS.visible; e.currentTarget.classList.toggle('on', CUIS.visible); });
+const TC = 70.2, VM = 1100, ACC = 0.35;   // boucle de la brigade calée sur l'ancien minutage 70,2 s (indépendante de la visite guidée) ; marche 1,1 m/s, élan 0,35 s
+// postes (mm) : où se tenir et vers où regarder, ramenés hors des meubles au chargement
+const POSTES = { C05: [6620, 6907, 5974, 6527], C06: [6905, 6446, 6259, 6066], C07: [7218, 5877, 6572, 5497], C04: [6337, 7369, 5691, 6989],
+  C21: [7300, 6200, 7817, 6335], C14: [9600, 7350, 10555, 7351], ILOT: [9450, 6500, 8228, 6600], PASSE: [8450, 8200, 8450, 8912],
+  C12: [8604, 5250, 8604, 4477], P01: [11900, 9150, 11900, 9900], L01: [8300, 11250, 7700, 11250], L02: [9173, 11450, 9173, 12100],
+  L03: [9900, 11550, 9900, 12100], L04: [9650, 11050, 9650, 10500] };
+// horaires : [départ (s), poste, geste, à la main, porté en marchant] ; 1re ligne = poste au début de la boucle, la dernière y ramène.
+// Calés sur le film : personne entre la caméra et l'appareil filmé (DBG.cadrage), ni trop près d'un autre (DBG.ecarts)
+const BRIGADE = [
+  { nom: 'chef', coiffe: 'toque', veste: 0xf4f4f0, tablier: 0x24272b, pantalon: 0x2a2e35, peau: 0xe8b996, cheveux: 0x3b2a1e, plan: [[0, 'C05', 'feu', 'poele'],
+    [9.5, 'C06', 'plancha', 'spatule'], [16.4, 'C07', 'plancha', 'spatule'], [26.5, 'C21', 'tiroir'], [33, 'C05', 'feu', 'poele'], [53, 'C04', 'couper', 'couteau'], [61, 'C05', 'feu', 'poele']] },
+  { nom: 'second', coiffe: 'casquette', veste: 0xf4f4f0, tablier: 0x2d4560, pantalon: 0x34383f, peau: 0xb07a55, cheveux: 0x15110e, plan: [[0, 'ILOT', 'dresser'],
+    [0.2, 'PASSE', 'dresser', '', 'plateau'], [12, 'C14', 'tiroir'], [22, 'C12', 'four'], [31, 'ILOT', 'couper', 'couteau'], [50, 'C12', 'four'], [56, 'ILOT', 'dresser']] },
+  { nom: 'pâtissier', coiffe: 'calot', veste: 0xf4f4f0, tablier: 0xeceae4, pantalon: 0x2f3338, peau: 0xf0c9aa, cheveux: 0x7a5a3a, plan: [[0, 'P01', 'patisser'],
+    [20.4, 'PASSE', 'dresser', '', 'plateau'], [29, 'P01', 'patisser'], [59.5, 'PASSE', 'dresser', '', 'plateau'], [66, 'P01', 'patisser']] },
+  { nom: 'plongeur', coiffe: 'bonnet', veste: 0x7d868f, manches: 'courtes', tablier: 0x24577f, pantalon: 0x2c3036, peau: 0x7a5038, cheveux: 0x111111, gants: 0xe3bf3c,
+    plan: [[0, 'L02', 'capot'], [9, 'L03', 'dresser', '', 'casier'], [20, 'L04', 'ranger', '', 'pile'], [30, 'L01', 'plonge'], [46, 'L02', 'capot', '', 'casier'],
+      [55, 'L01', 'plonge'], [66, 'L02', 'capot', '', 'casier']] },
+];
+// gestes : [torse (penché < 0), tête (baissée < 0), bras gauche : en avant, vers l'intérieur, coude, bras droit : idem, cuisses, genoux] en
+// radians au temps t (s) ; mains vers 1 m de haut et 40 cm devant soi au plan de travail
+const GESTES = {
+  feu: t => { const k = Math.max(0, Math.sin(t * 4.2)) ** 3; return [-0.12, -0.42, 0.42 + 0.15 * k, 0.12, 0.99 + 0.2 * k, 0.35, 0.25, 0.8, 0, 0]; },   // coups de poêle
+  plancha: t => [-0.15, -0.48, 0.35, 0.3, 0.7, 0.42 + 0.08 * Math.sin(t * 3.1), 0.12 + 0.18 * Math.sin(t * 1.55), 0.85 + 0.12 * Math.sin(t * 3.1), 0, 0],
+  couper: t => { const k = Math.max(0, Math.sin(t * 8.5)); return [-0.24, -0.6, 0.45, 0.38, 0.85, 0.5 + 0.06 * k, 0.25, 0.75 + 0.22 * k, 0, 0]; },
+  dresser: t => [-0.26, -0.55, 0.5 + 0.06 * Math.sin(t * 1.3), 0.3, 0.78, 0.5 + 0.08 * Math.sin(t * 1.7 + 1), 0.28 + 0.06 * Math.sin(t * 2.1), 0.78 + 0.1 * Math.sin(t * 1.7), 0, 0],
+  tiroir: t => [-0.65, -0.15, 0.6, 0.05, 0.3, 1 + 0.12 * Math.sin(t * 1.3), 0.1, 0.25, 0.6, -1.1],   // accroupi devant un tiroir bas
+  plonge: t => [-0.32, -0.55, 0.42 + 0.1 * Math.sin(t * 3), 0.32, 0.4 + 0.15 * Math.sin(t * 3 + 1), 0.42 + 0.1 * Math.sin(t * 3 + 2), 0.32, 0.4 + 0.15 * Math.sin(t * 3), 0, 0],
+  ranger: t => [0.03, 0.2, 1.2 + 0.4 * Math.sin(t * 1.2), 0.12, 0.5, 1.4 + 0.5 * Math.sin(t * 1.2 + 2), 0.12, 0.6, 0, 0],   // sur les étagères
+  capot: t => { const k = 0.5 - 0.5 * Math.cos(t * 0.9); return [-0.08, -0.1 + 0.25 * k, 0.68 + 0.7 * k, 0.12, 0.4 - 0.2 * k, 0.68 + 0.7 * k, 0.12, 0.4 - 0.2 * k, 0, 0]; },   // lève et baisse le capot
+  patisser: t => { const k = Math.sin(t * 2.4); return [-0.28 - 0.05 * k, -0.5, 0.5 + 0.18 * k, 0.3, 0.75 - 0.15 * k, 0.5 + 0.18 * k, 0.3, 0.75 - 0.15 * k, 0, 0]; },   // rouleau
+  four: t => [-0.06, -0.05, 0.15, 0.05, 0.3, 1.05 + 0.15 * Math.sin(t * 0.8), 0.1, 0.3, 0, 0],
+};
+const geste = (g, t) => { const p = GESTES[g](t); return [...p.slice(0, 8), p[8], p[9], p[8], p[9]]; };
+// marche : pas de ~65 cm, jambes et bras opposés, amplitude selon la vitesse relative v ; bras en avant, coudes pliés, si l'on porte
+function marche(phi, v, porte) {
+  const s = Math.sin(phi), c = Math.cos(phi), A = 0.38 * v;
+  return [-0.04 * v, -0.08, porte ? 0.3 : -0.3 * s * v, 0.05, porte ? 1.45 : 0.25, porte ? 0.3 : 0.3 * s * v, 0.05, porte ? 1.45 : 0.25,
+    A * s, -(0.65 * Math.max(0, c) + 0.05) * v, -A * s, -(0.65 * Math.max(0, -c) + 0.05) * v];
+}
+// silhouettes : primitives partagées, matériaux standard éclairés par les reflets de la cuisine (scene.environment), atténués (?ecl=) :
+// la capture force les plafonniers (LEDX) et les blancs des vestes saturaient
+const ECL = +(Q.get('ecl') || 0.25), MATS = {}, GEOS = {};
+const mat = (c, r = 0.8, me = 0) => MATS[[c, r, me]] ??= new THREE.MeshStandardMaterial({ color: c, roughness: r, metalness: me, envMapIntensity: ECL });
+const geo = (k, f) => GEOS[k] ??= f(), capsule = (r, l) => geo('c' + [r, l], () => new THREE.CapsuleGeometry(r, l, 4, 12));
+const boite = (x, y, z) => geo('b' + [x, y, z], () => new THREE.BoxGeometry(x, y, z)), cyl = (a, b, h) => geo('y' + [a, b, h], () => new THREE.CylinderGeometry(a, b, h, 20));
+const boule = (r, t = Math.PI) => geo('s' + [r, t], () => new THREE.SphereGeometry(r, 16, 10, 0, 2 * Math.PI, 0, t));
+const grp = (p, x = 0, y = 0, z = 0) => { const o = new THREE.Group(); o.position.set(x, y, z); p.add(o); return o; };
+const piece = (p, g, m, x = 0, y = 0, z = 0) => { const o = new THREE.Mesh(g, m); o.position.set(x, y, z); p.add(o); return o; };
+const TACHE = new THREE.MeshBasicMaterial({ transparent: true, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -4, map: (() => {
+  const c = document.createElement('canvas'); c.width = c.height = 64; const g = c.getContext('2d'), r = g.createRadialGradient(32, 32, 0, 32, 32, 32);
+  r.addColorStop(0, 'rgba(0,0,0,.5)'); r.addColorStop(1, 'rgba(0,0,0,0)'); g.fillStyle = r; g.fillRect(0, 0, 64, 64); return new THREE.CanvasTexture(c); })() });
+function bonhomme(b) {
+  const root = new THREE.Group(), corps = grp(root), bassin = grp(corps, 0, 0.92), torse = grp(bassin), os = { corps, torse };
+  const peau = mat(b.peau, 0.6), veste = mat(b.veste, 0.85), pant = mat(b.pantalon, 0.85), blanc = mat(0xfafaf7, 0.9);
+  piece(bassin, capsule(0.15, 0.06), pant).scale.z = 0.75;
+  for (const [s, x] of [['g', -1], ['d', 1]]) {
+    const cuisse = grp(bassin, 0.095 * x), genou = grp(cuisse, 0, -0.45), bras = grp(torse, 0.205 * x, 0.5), coude = grp(bras, 0, -0.3), main = grp(coude, 0, -0.28);
+    piece(cuisse, capsule(0.068, 0.31), pant, 0, -0.225); piece(genou, capsule(0.055, 0.32), pant, 0, -0.215);
+    const pied = grp(genou, 0, -0.435, -0.05), sem = piece(pied, capsule(0.045, 0.17), mat(0x17191c, 0.5)); sem.rotation.x = Math.PI / 2; sem.scale.set(1.1, 1, 0.75);
+    piece(bras, capsule(0.054, 0.19), veste, 0, -0.15); piece(coude, capsule(0.045, 0.19), b.manches ? peau : veste, 0, -0.135);
+    piece(main, boule(0.048), b.gants ? mat(b.gants, 0.5) : peau).scale.set(0.8, 1.15, 1);
+    os[s] = { cuisse, genou, pied, bras, coude, main };
+  }
+  piece(torse, capsule(0.17, 0.28), veste, 0, 0.3).scale.z = 0.7;
+  piece(torse, boite(0.34, 0.7, 0.012), mat(b.tablier, 0.9), 0, 0.07, -0.124);   // tablier, de la poitrine à mi-cuisse
+  const tete = os.tete = grp(torse, 0, 0.57);
+  piece(tete, cyl(0.05, 0.055, 0.1), peau, 0, 0.02); piece(tete, boule(0.1), peau, 0, 0.14).scale.set(0.9, 1.12, 1);
+  piece(tete, boule(0.022), peau, 0, 0.13, -0.095);   // nez : sens du regard
+  for (const x of [-0.034, 0.034]) piece(tete, boule(0.011), mat(0x1a1410, 0.4), x, 0.16, -0.083);
+  const ch = piece(tete, boule(0.104, 1.75), mat(b.cheveux, 0.9), 0, 0.15, 0.012); ch.scale.set(0.92, 1.1, 1.02); ch.rotation.x = 0.45;
+  if (b.coiffe === 'toque') { piece(tete, cyl(0.1, 0.098, 0.07), blanc, 0, 0.26); piece(tete, cyl(0.125, 0.105, 0.2), blanc, 0, 0.39); piece(tete, boule(0.128), blanc, 0, 0.49).scale.y = 0.45; }
+  else if (b.coiffe === 'calot') { piece(tete, cyl(0.104, 0.1, 0.1), blanc, 0, 0.27); piece(tete, boule(0.106), blanc, 0, 0.32).scale.y = 0.5; }
+  else { const c = mat(b.coiffe === 'casquette' ? 0xf2f2ef : 0x1f2f45, 0.85); piece(tete, boule(0.108, 1.6), c, 0, 0.17); if (b.coiffe === 'casquette') piece(tete, boite(0.15, 0.008, 0.08), c, 0, 0.18, -0.12); }
+  piece(root, geo('ombre', () => new THREE.PlaneGeometry(0.8, 0.8)), TACHE, 0, 0.004).rotation.x = -Math.PI / 2;
+  // accessoires : en main (repère de la main remis à plat pour le geste qui s'en sert) ou portés devant soi
+  const acier = mat(0xc4c8cc, 0.32, 0.9), fonte = mat(0x2e3033, 0.45, 0.7), noir = mat(0x1b1d20, 0.5), porc = mat(0xf6f6f2, 0.3), acc = {};
+  const A = {
+    poele: () => { const g = grp(os.g.main); g.rotation.x = -1.29; piece(g, cyl(0.13, 0.11, 0.05), fonte, 0, 0.02, -0.3); piece(g, boite(0.024, 0.018, 0.2), fonte, 0, 0.01, -0.1); return g; },
+    spatule: () => { const g = grp(os.d.main); g.rotation.x = -1.12; piece(g, boite(0.016, 0.016, 0.2), noir, 0, -0.02, -0.08).rotation.x = 0.4; piece(g, boite(0.085, 0.004, 0.1), acier, 0, -0.07, -0.21); return g; },
+    couteau: () => { const g = grp(os.d.main); g.rotation.x = -1.01; piece(g, boite(0.02, 0.026, 0.11), noir); piece(g, boite(0.003, 0.035, 0.2), acier, 0, -0.005, -0.15); return g; },
+    plateau: () => { const g = grp(torse, 0, 0.29, -0.42); piece(g, boite(0.325, 0.022, 0.53), acier); for (const z of [-0.12, 0.12]) piece(g, cyl(0.1, 0.08, 0.02), porc, 0, 0.021, z); return g; },
+    casier: () => { const g = grp(torse, 0, 0.31, -0.45); piece(g, boite(0.5, 0.1, 0.5), mat(0x35506a, 0.7)); return g; },
+    pile: () => { const g = grp(torse, 0, 0.34, -0.38); piece(g, cyl(0.13, 0.11, 0.14), porc); return g; },
+  };
+  for (const e of b.plan) for (const k of e.slice(3)) if (k && !acc[k]) acc[k] = A[k]();
+  return { root, os, acc };
+}
+function articuler({ os }, P) {
+  os.torse.rotation.x = P[0]; os.tete.rotation.x = P[1];
+  os.g.bras.rotation.set(P[2], 0, P[3]); os.g.coude.rotation.x = P[4]; os.d.bras.rotation.set(P[5], 0, -P[6]); os.d.coude.rotation.x = P[7];
+  for (const [o, c, g] of [[os.g, P[8], P[9]], [os.d, P[10], P[11]]]) { o.cuisse.rotation.x = c; o.genou.rotation.x = g; o.pied.rotation.x = -(c + g); }
+  const jambe = (c, g) => 0.45 * Math.cos(c) + 0.43 * Math.cos(c + g);
+  os.corps.position.y = Math.max(jambe(P[8], P[9]), jambe(P[10], P[11])) - 0.88;   // le pied d'appui reste au sol
+}
+// trajet le plus court (mm) : A* sur une grille de 10 cm de la pièce (case libre = freeAt), puis en ligne droite tant que le passage reste libre
+const LIBRES = {};   // cases libres par garde (R pour les cuisiniers, RCAM pour la caméra de la visite), calculées au premier trajet
+const NX = Math.ceil((ROOM.x1 - ROOM.x0) / 100), NY = Math.ceil((ROOM.y1 - ROOM.y0) / 100), centre = k => [ROOM.x0 + (k % NX + 0.5) * 100, ROOM.y0 + (Math.floor(k / NX) + 0.5) * 100];
+const tasPush = (h, e) => { h.push(e); for (let i = h.length - 1, p; i > 0 && h[p = (i - 1) >> 1][0] > h[i][0]; i = p) [h[p], h[i]] = [h[i], h[p]]; };
+const tasPop = h => { const r = h[0], e = h.pop(); if (h.length) { h[0] = e; for (let i = 0; ;) { const l = 2 * i + 1, m = l + 1 < h.length && h[l + 1][0] < h[l][0] ? l + 1 : l; if (l >= h.length || h[m][0] >= h[i][0]) break; [h[m], h[i]] = [h[i], h[m]]; i = m; } } return r; };
+function chemin(a, b, r = R) {
+  const LIBRE = LIBRES[r] ??= Uint8Array.from({ length: NX * NY }, (_, k) => freeAt(...centre(k), r) ? 1 : 0);
+  const id = ([X, Y]) => clamp(Math.floor((X - ROOM.x0) / 100), 0, NX - 1) + NX * clamp(Math.floor((Y - ROOM.y0) / 100), 0, NY - 1), k0 = id(a), k1 = id(b);
+  if (k0 === k1) return [a, b];
+  const g = new Float32Array(NX * NY).fill(Infinity), de = new Int32Array(NX * NY).fill(-1), q = [];
+  const hx = k => { const dx = Math.abs(k % NX - k1 % NX), dy = Math.abs(Math.floor(k / NX) - Math.floor(k1 / NX)); return Math.max(dx, dy) + 0.414 * Math.min(dx, dy); };
+  g[k0] = 0; tasPush(q, [hx(k0), k0]);
+  while (q.length) {
+    const [f, k] = tasPop(q); if (k === k1) break;
+    if (f > g[k] + hx(k) + 1e-6) continue;
+    const i = k % NX, j = (k - i) / NX;
+    for (let dj = -1; dj <= 1; dj++) for (let di = -1; di <= 1; di++) {
+      const i2 = i + di, j2 = j + dj, k2 = j2 * NX + i2;   // diagonale : sans couper le coin d'un meuble
+      if ((!di && !dj) || i2 < 0 || j2 < 0 || i2 >= NX || j2 >= NY || (!LIBRE[k2] && k2 !== k1) || (di && dj && !(LIBRE[j * NX + i2] && LIBRE[j2 * NX + i]))) continue;
+      const c = g[k] + (di && dj ? 1.414 : 1);
+      if (c < g[k2]) { g[k2] = c; de[k2] = k; tasPush(q, [c + hx(k2), k2]); }
+    }
+  }
+  if (de[k1] < 0) { console.warn('[ocean] pas de passage', a, b); return [a, b]; }
+  const pts = [b]; for (let k = de[k1]; k !== k0; k = de[k]) pts.unshift(centre(k)); pts.unshift(a);
+  const vu = (p, q) => { const n = Math.ceil(Math.hypot(q[0] - p[0], q[1] - p[1]) / 50); for (let i = 1; i < n; i++) if (!freeAt(p[0] + (q[0] - p[0]) * i / n, p[1] + (q[1] - p[1]) * i / n, r)) return false; return true; };
+  const out = [a];
+  for (let i = 0; i < pts.length - 1;) { let j = pts.length - 1; while (j > i + 1 && !vu(pts[i], pts[j])) j--; out.push(pts[j]); i = j; }
+  return out;
+}
+// horaire → segments : au poste [t0, t1, poste, geste, main], ou en marche (profil trapèze : élan, 1,1 m/s, arrêt)
+let BR = [], T0C = performance.now();
+function brigade() {
+  const P = {};
+  for (const [k, [X, Y, tX, tY]] of Object.entries(POSTES)) { const [x, y] = nearestFree(X, Y); P[k] = [x, y, yawTo(x, y, tX, tY)]; }
+  BR = BRIGADE.map((b, n) => {
+    const c = bonhomme(b), seg = []; let at = P[b.plan[0][1]], t = 0, g = b.plan[0];
+    for (const e of b.plan.slice(1)) {
+      seg.push({ t0: t, t1: e[0], poste: at, geste: g[2], main: g[3] });
+      const pts = chemin(at, P[e[1]]), cum = [0];
+      for (let i = 1; i < pts.length; i++) cum.push(cum[i - 1] + Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]));
+      const L = cum.at(-1), ta = Math.min(ACC, L / VM), w = L / VM + ta;
+      seg.push({ t0: e[0], t1: e[0] + w, pts, cum, L, ta, w, pas: L / Math.max(1, Math.round(L / 650)), de: at, a: P[e[1]], g0: g[2], g1: e[2], porte: e[4] });
+      at = P[e[1]]; t = e[0] + w; g = e;
+    }
+    seg.push({ t0: t, t1: TC + 1, poste: at, geste: g[2], main: g[3] });
+    if (t > TC) console.warn('[ocean]', b.nom, 'revient après la fin de la boucle', t.toFixed(1));
+    CUIS.add(c.root); return { ...c, nom: b.nom, seg, ph: n * 1.7 };
+  });
+}
+const tourne = (a, b, k) => a + Math.atan2(Math.sin(b - a), Math.cos(b - a)) * k;   // de l'angle a vers b, fraction k
+function etat(c, t) {   // position (mm), cap, pose et accessoires du cuisinier c au temps t de la boucle
+  const s = c.seg.find(s => t < s.t1);
+  if (s.poste) return { p: s.poste, h: s.poste[2], pose: geste(s.geste, t + c.ph), main: s.main };
+  const u = t - s.t0, { L, ta, w, cum, pts } = s;
+  const d = u < ta ? VM * u * u / (2 * ta) : u < w - ta ? VM * ta / 2 + VM * (u - ta) : L - VM * (w - u) ** 2 / (2 * ta);
+  const v = u < ta ? u / ta : u < w - ta ? 1 : (w - u) / ta;   // vitesse relative
+  const sur = x => { let i = 1; while (i < cum.length - 1 && cum[i] < x) i++; const a = pts[i - 1], b = pts[i], k = (x - cum[i - 1]) / ((cum[i] - cum[i - 1]) || 1); return [a[0] + (b[0] - a[0]) * k, a[1] + (b[1] - a[1]) * k]; };
+  const p = sur(d), q = sur(Math.min(L, d + 350));   // regard 35 cm devant soi ; au départ et à l'arrivée, vers le poste
+  const h = tourne(s.a[2], tourne(s.de[2], Math.hypot(q[0] - p[0], q[1] - p[1]) > 1 ? yawTo(p[0], p[1], q[0], q[1]) : s.a[2], clamp(u / 0.5, 0, 1)), clamp((w - u) / 0.6, 0, 1));
+  const m = marche(Math.PI * d / s.pas, v, !!s.porte), pose = u < w / 2 ? mix(geste(s.g0, t + c.ph), m, clamp(u / 0.45, 0, 1)) : mix(geste(s.g1, t + c.ph), m, clamp((w - u) / 0.45, 0, 1));
+  return { p, h, pose, porte: s.porte };
+}
+function animer(t) {   // t (s) : temps du film, ou de la visite (en boucle) ; cuisinier caché si la caméra est dedans
+  if (!CUIS.visible || !BR.length) return;
+  t = (t % TC + TC) % TC;
+  for (const c of BR) {
+    const e = etat(c, t);
+    c.root.position.set(e.p[0] / 1000, 0, -e.p[1] / 1000); c.root.rotation.y = e.h; articuler(c, e.pose);
+    for (const [k, o] of Object.entries(c.acc)) o.visible = k === e.main || k === e.porte;
+    c.root.visible = planMode || Math.hypot(c.root.position.x - pos.x, c.root.position.z - pos.z) > 0.45;
+  }
+}
+
+// ---------- Son de la visite guidée, choisi au lancement (l'ambiance de cuisine — hotte, friteuses, brigade — est retirée) :
+// MUSIQUE : musique de fond en boucle (assets/audio/musique.mp3, création EVI PRO — assets/audio/SOURCES.json), durées d'origine ;
+// VOIX OFF : à chaque étape, son segment (assets/voix/segments.json, textes tirés des fiches — assets/voix/SOURCES.json), lancé VOIX_AV s
+// après le début de l'étape, qui dure le temps du segment décodé + marges : remplacer un MP3 par un enregistrement suffit, la visite se
+// recale sur sa durée. Rien n'est chargé avant ce choix (première image intacte) ; le clic fournit le geste qu'exigent iOS et Chrome pour
+// le contexte audio. Pause : contexte suspendu, voix et horloge de la visite s'arrêtent ensemble ; la vidéo enregistre aussi le son. ----------
+const MUSV = 0.33, VOIX_AV = 0.9, VOIX_AP = 1.6, ARRET_MIN = 6;   // volume de la musique ; marges avant / après la voix (s) ; arrêt le plus court
+const AUDIO_Q = Q.get('audio');   // ?audio=musique | voix | 0 : sans la question au lancement
+const son = { ctx: null, maitre: null, bus: null, dest: null, mode: null, dernier: null, charge: false, jeton: 0, ouvert: 0, ferme: 0, bas: false, buf: {}, man: null, src: null, mus: null, vseg: null, vi: -1, susT: 0 };
+const segVoix = (sh, v = VARIANTE) => { const c = sh.c || sh.v || (sh.tour ? 'tour' : ''); return v && MARQUE_B[c] ? c + '_capic' : c; };   // segment d'une étape (la variante UNOX · CAPIC a les siens)
+function dureeEtape(sh, pr, mode) {   // en voix off, un arrêt dure le temps de sa voix + marges ; l'ouverture, le tour et la fin gardent au moins leur durée
+  const d = (pr && pr.d) || sh.d || DUREE, b = mode === 'voix' && son.buf[segVoix(sh)];
+  if (!b) return d;
+  const v = VOIX_AV + b.duration + VOIX_AP;
+  return sh.c ? Math.max(ARRET_MIN, v) : Math.max(d, v);
+}
+function sonCtx() {   // dans le clic : contexte audio créé ou réveillé par le geste de l'utilisateur
+  if (!son.ctx) {
+    const AC = window.AudioContext || window.webkitAudioContext; if (!AC) return null;
+    son.ctx = new AC(); son.maitre = son.ctx.createGain(); son.maitre.connect(son.ctx.destination);
+    if (navigator.audioSession) try { navigator.audioSession.type = 'playback'; } catch {}   // iPhone : la voix passe même en mode silencieux
+    son.ctx.addEventListener('statechange', () => {   // iOS : une interruption (appel, Siri) met la visite en pause, sinon la voix se décalerait
+      if (!film || film.pause || !son.mode) return;
+      if (son.ctx.state === 'interrupted') filmPause(); else if (son.ctx.state !== 'running') son.ctx.resume().catch(() => {});
+    });
+  }
+  clearTimeout(son.susT); son.ctx.resume().catch(() => {});
+  return son.ctx;
+}
+async function sonCharge(mode, etat) {   // MP3 décodés une fois pour toutes (puis servis par le cache du service worker)
+  const dec = (url, k) => son.buf[k] ? Promise.resolve(son.buf[k]) : fetch(url)
+    .then(r => { if (!r.ok) throw new Error(url.split('?')[0]); return r.arrayBuffer(); })
+    .then(b => son.ctx.decodeAudioData(b)).then(b => (son.buf[k] = b));
+  if (mode === 'musique') { etat('Chargement de la musique…'); return dec(`assets/audio/musique.mp3?v=${AVSON}`, 'musique'); }
+  etat('Chargement de la voix off…');
+  son.man = son.man || await fetch(`assets/voix/segments.json?v=${AVVOIX}`).then(r => { if (!r.ok) throw new Error('assets/voix/segments.json'); return r.json(); });
+  const dispo = new Map(son.man.segments.map(s => [s.segment, s.fichier]));
+  const voulus = [...new Set(FILM.flatMap(sh => [segVoix(sh, false), segVoix(sh, true)]))].filter(s => dispo.has(s));   // les deux variantes : on peut en changer pendant la visite
+  let n = 0; etat(`Chargement de la voix off… 0 / ${voulus.length}`);
+  const res = await Promise.allSettled(voulus.map(s => dec(`assets/voix/${dispo.get(s)}?v=${AVVOIX}`, s).then(() => etat(`Chargement de la voix off… ${++n} / ${voulus.length}`))));
+  const rates = voulus.filter((s, i) => res[i].status === 'rejected');   // un segment manquant se tait (arrêt à sa durée d'origine), les autres parlent
+  if (rates.length === voulus.length) throw voulus.length ? res[0].reason : new Error('aucun segment de voix dans assets/voix/segments.json');
+  if (rates.length) console.warn('Voix off, segments indisponibles :', rates.join(', '));
+}
+function sonDebut(mode) {   // départ de la visite : fondu d'entrée, musique en boucle (le silence d'encodage MP3 sauté)
+  son.mode = mode; son.vi = -1; son.vseg = null;
+  if (!mode) return sonDort();
+  son.dernier = mode;
+  const ctx = son.ctx, t = ctx.currentTime;
+  son.bus = ctx.createGain(); son.bus.connect(son.maitre);   // un gain par visite : relancée juste après un abandon, elle n'annule pas le fondu de sortie de la précédente
+  const g = son.bus.gain; g.setValueAtTime(0, t); g.linearRampToValueAtTime(1, t + (mode === 'musique' ? 1.5 : 0.05));
+  if (mode !== 'musique') return;
+  const s = ctx.createBufferSource(), gm = ctx.createGain();
+  s.buffer = son.buf.musique; s.loop = true; s.loopStart = 0.06; s.loopEnd = s.buffer.duration - 0.08;
+  gm.gain.value = MUSV; s.connect(gm).connect(son.bus); s.start(t, 0.06); son.mus = { s, g: gm };
+}
+function sonVoixStop() {   // la voix en cours s'efface en 0,1 s (Suivant, variante changée, nouvelle étape) ; pas encore partie, ou en pause, elle est coupée net : rien ne repart à la reprise
+  if (!son.src) return; const { s, g, t0 } = son.src, ctx = son.ctx, t = ctx.currentTime; son.src = null; son.vseg = null;
+  g.gain.setTargetAtTime(0, t, 0.03); try { s.stop(ctx.state === 'running' && t0 <= t ? t + 0.2 : 0); } catch {}
+}
+function sonEtape(i, sh, tl, d) {   // à chaque nouvelle étape — pas quand une puce d'option rafraîchit l'étape en cours
+  if (!son.mode) return;
+  const k = segVoix(sh), ctx = son.ctx, t = ctx.currentTime;
+  if (i === son.vi) { if (son.vseg && son.vseg !== k) sonVoixStop(); return; }   // puce d'option : la voix continue (variante changée : filmReplan a déjà relancé l'étape)
+  son.vi = i;
+  if (son.mode === 'musique') {   // dernière étape : la musique s'éteint avec l'image (horloge audio suspendue pendant la pause)
+    if (i === film.plans.length - 1 && son.mus) { const g = son.mus.g.gain; g.setValueAtTime(MUSV, t + Math.max(0, d - tl - 3)); g.linearRampToValueAtTime(0, t + Math.max(0.1, d - tl - 0.3)); }
+    return;
+  }
+  sonVoixStop();
+  const b = son.buf[k], off = Math.max(0, tl - VOIX_AV); if (!b || off >= b.duration) return;
+  const s = ctx.createBufferSource(), g = ctx.createGain(), t0 = t + Math.max(0, VOIX_AV - tl); s.buffer = b; s.connect(g).connect(son.bus);
+  s.start(t0, off); son.src = { s, g, t0 }; son.vseg = k;
+}
+function sonFin() {   // fin ou abandon : fondu de sortie, sources arrêtées (une voix pas encore partie ne partira pas), contexte suspendu (0 CPU hors visite)
+  if (!son.ctx || !son.mode) { son.mode = null; return sonDort(); }
+  const ctx = son.ctx, t = ctx.currentTime, g = son.bus.gain, joue = ctx.state === 'running';
+  g.cancelScheduledValues(t); g.setValueAtTime(g.value, t); g.linearRampToValueAtTime(0, t + 0.4);
+  for (const { s, t0 = 0 } of [son.src, son.mus].filter(Boolean)) try { s.stop(joue && t0 <= t ? t + 0.45 : 0); } catch {}
+  son.src = son.mus = son.vseg = son.mode = son.bus = null;
+  sonDort();
+}
+function sonDort() {   // contexte suspendu 0,6 s plus tard (après le fondu) dès qu'aucune visite sonore ne tourne : visite sans son, choix annulé, échec
+  clearTimeout(son.susT);
+  if (son.ctx) son.susT = setTimeout(() => { if (!film || !son.mode) son.ctx.suspend().catch(() => {}); }, 600);
+}
+document.addEventListener('visibilitychange', () => { if (document.hidden && film && !film.pause) filmPause(); });   // onglet quitté : la visite se met en pause (voix et vidéo comprises)
+// choix du son au lancement (▶ Visite guidée et Enregistrer la visite)
+let choixVideo = false;
+const fondInerte = v => { for (const el of document.body.children) if (el.id !== 'son-choix' && el.tagName !== 'SCRIPT') el.inert = v; };   // fenêtre ouverte : le reste de la page n'est ni atteignable au clavier ni lu
+function ouvreChoix(video, etat = '') {   // la fenêtre du choix ; elle revient avec le message quand le son n'a pas pu être chargé
+  choixVideo = video; son.ouvert = performance.now(); fondInerte(true);
+  $('son-choix-t').textContent = video ? 'Enregistrer la visite' : 'Visite guidée'; $('son-etat').textContent = etat;
+  $('son-choix').querySelectorAll('button').forEach(b => b.removeAttribute('aria-disabled')); son.bas = false;
+  $('son-choix').hidden = false; $('son-choix').querySelector('button').focus();
+}
+function fermeChoix() { son.jeton++; son.charge = false; son.ferme = performance.now(); $('son-choix').hidden = true; fondInerte(false); sonDort(); $(choixVideo ? 'b-video' : 'b-film').focus({ preventScroll: true }); }   // Annuler, Échap, clic à côté : un chargement en cours est abandonné ; le focus revient au bouton qui avait ouvert la fenêtre
+function visite(video) {
+  if (!ready || film || son.charge || renderer.xr.isPresenting) return;
+  if (AUDIO_Q !== null) return lanceVisite(video, ['musique'].includes(AUDIO_Q) ? AUDIO_Q : null);
+  ouvreChoix(video);
+}
+async function lanceVisite(video, mode) {   // sonCtx() avant tout await : il doit tomber dans le geste du clic
+  if (son.charge && mode) return;
+  const j = ++son.jeton;   // Sans son, Annuler ou Échap pendant le chargement rendent celui-ci caduc
+  son.charge = false;
+  if (mode && !sonCtx()) return ouvreChoix(video, 'Son non pris en charge par ce navigateur : lancez la visite sans son.');
+  if (mode) {
+    son.charge = true; $('son-choix').querySelectorAll('.primary').forEach(b => b.setAttribute('aria-disabled', 'true'));   // Sans son et Annuler restent actifs ; aria-disabled et non disabled : le bouton actionné garde le focus
+    const etat = m => { if (j !== son.jeton || !son.charge) return; $('son-etat').textContent = m; if ($('son-choix').hidden) toast(m); };   // ?audio= : pas de fenêtre, un toast
+    let minuteur;
+    try { await Promise.race([sonCharge(mode, etat), new Promise((_, ko) => { minuteur = setTimeout(() => ko(new Error('délai de 30 s dépassé')), 30000); })]); }
+    catch (err) {
+      if (j !== son.jeton) return;
+      console.error('Son de la visite :', err); son.charge = false; sonDort();
+      ouvreChoix(video, 'Son indisponible (fichiers audio inaccessibles) : réessayez, ou lancez la visite sans son.');
+      $('son-choix').querySelector(`[data-son="${mode}"]`).focus(); return;
+    } finally { clearTimeout(minuteur); }
+    if (j !== son.jeton) return;   // abandonné pendant le chargement
+  }
+  son.charge = false; $('son-choix').hidden = true; fondInerte(false);
+  filmStart(video, mode);
+  if (!film) return sonDort();   // visite refusée (casque VR entré pendant le chargement) : le contexte audio se rendort
+  $('f-pause').focus({ preventScroll: true });   // le focus était dans la fenêtre, désormais masquée : il passe aux commandes de la visite
+  if (document.hidden) filmPause();   // chargement fini onglet caché : la visite attend en pause
+}
+$('son-choix').addEventListener('pointerdown', e => { son.bas = e.target === e.currentTarget; });   // un clic à côté ne compte que s'il commence et finit sur le fond
+$('son-choix').addEventListener('pointerup', e => { son.bas &&= e.target === e.currentTarget; });
+$('son-choix').addEventListener('click', e => {
+  const b = e.target.closest('button[data-son]');
+  if (b) b.dataset.son === 'non' ? fermeChoix() : lanceVisite(choixVideo, b.dataset.son === 'sans' ? null : b.dataset.son);   // pendant un chargement, lanceVisite ignore Musique et Voix off
+  else if (e.target === e.currentTarget && son.bas && performance.now() - son.ouvert > 400) fermeChoix();   // un clic à côté ferme sans lancer (pas la fin d'un double-clic sur le lancement)
+});
+addEventListener('keydown', e => {   // Entrée maintenue : la répétition ne suit pas le focus que le lancement déplace (choix du son, ▶ Visite guidée, ⏸)
+  if (e.repeat && e.key === 'Enter' && (e.target.closest?.('#son-choix') || ['b-film', 'b-video', 'f-pause'].includes(e.target.id))) e.preventDefault();
+}, true);
+document.addEventListener('keydown', e => {   // fenêtre ouverte : Échap la ferme ; les touches ne vont ni à la caméra ni à la fiche derrière (Espace active le bouton)
+  if ($('son-choix').hidden) return;
+  e.stopPropagation(); if (e.key === 'Escape') fermeChoix();
+});
+
+// ---------- Boucle ----------
+const clock = new THREE.Clock(), vdir = new THREE.Vector3();
+let snapSize = null;
+// halo des points brillants (rendu réel sur ordinateur) : scène en flottants, halo, puis tons et sRGB (OutputPass) ; dessin et casque : rendu direct
+let composer = null;
+if (!isTouch && HALO > 0) Promise.all(['EffectComposer', 'RenderPass', 'UnrealBloomPass', 'OutputPass'].map(f => import(`three/addons/postprocessing/${f}.js`)))
+  .then(([{ EffectComposer }, { RenderPass }, { UnrealBloomPass }, { OutputPass }]) => {
+    const c = new EffectComposer(renderer, new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType, samples: 4 }));
+    c.addPass(new RenderPass(scene, camera)); c.addPass(new UnrealBloomPass(new THREE.Vector2(256, 256), HALO, 0.45, SEUIL)); c.addPass(new OutputPass());
+    const s = renderer.getSize(new THREE.Vector2()); c.setPixelRatio(renderer.getPixelRatio()); c.setSize(s.x, s.y); composer = c;
+  }).catch(e => console.warn('[ocean] halo indisponible', e));
+const draw = () => composer && !PLAN && !planMode && !renderer.xr.isPresenting ? composer.render() : renderer.render(scene, camera);   // vue de dessus : sans halo (reflets des plafonniers au sol)
+function resize() { const w = snapSize ? snapSize[0] : innerWidth, h = snapSize ? snapSize[1] : innerHeight; if (canvas.width !== Math.floor(w * renderer.getPixelRatio()) || canvas.height !== Math.floor(h * renderer.getPixelRatio())) { renderer.setSize(w, h, false); composer?.setSize(w, h); camera.aspect = w / h; camera.updateProjectionMatrix(); if (planMode) VIEWS.plan(); } }
+addEventListener('resize', resize);
+function move(dx, dz) {   // glisse le long des obstacles
+  const X = pos.x * 1000, Y = -pos.z * 1000, nX = X + dx * 1000, nY = Y - dz * 1000;
+  if (planMode || !G || !freeAt(X, Y) || freeAt(nX, nY)) { pos.x += dx; pos.z += dz; }
+  else if (freeAt(nX, Y)) pos.x += dx;
+  else if (freeAt(X, nY)) pos.z += dz;
+  if (planMode) { pos.x = clamp(pos.x, ROOM.x0 / 1000, ROOM.x1 / 1000); pos.z = clamp(pos.z, -ROOM.y1 / 1000, -ROOM.y0 / 1000); }
+}
+function tick() {
+  resize();
+  const dt = Math.min(clock.getDelta(), 0.05), xr = renderer.xr.isPresenting;
+  let f = 0, s = 0;
+  if (keys.KeyW || keys.KeyZ || keys.ArrowUp) f += 1; if (keys.KeyS || keys.ArrowDown) f -= 1;
+  if (keys.KeyA || keys.KeyQ || keys.ArrowLeft) s -= 1; if (keys.KeyD || keys.ArrowRight) s += 1;
+  f -= jv.y; s += jv.x;
+  let heading = yaw + (gyro ? alphaOffset : 0);
+  if (xr) {
+    for (const src of renderer.xr.getSession().inputSources) { const gp = src.gamepad; if (!gp || gp.axes.length < 4) continue; if (src.handedness === 'right') { if (Math.abs(gp.axes[2]) > 0.7 && !src._snap) { yaw -= Math.sign(gp.axes[2]) * Math.PI / 6; src._snap = true; } if (Math.abs(gp.axes[2]) < 0.3) src._snap = false; } else { s += gp.axes[2]; f -= gp.axes[3]; } }
+    renderer.xr.getCamera().getWorldDirection(vdir); heading = Math.atan2(-vdir.x, -vdir.z);
+  } else if (gyro && devOri) { camera.getWorldDirection(vdir); heading = Math.atan2(-vdir.x, -vdir.z); }
+  if (film) filmStep();
+  else if (f || s) {
+    const len = Math.hypot(f, s); if (len > 1) { f /= len; s /= len; }
+    const sp = (keys.ShiftLeft || keys.ShiftRight ? 2.2 : 1.2) * (planMode ? 3 : 1) * dt;
+    move((-Math.sin(heading) * f + Math.cos(heading) * s) * sp, (-Math.cos(heading) * f - Math.sin(heading) * s) * sp);
+  }
+  if (gyro && devOri && !xr && !film) {
+    const a = THREE.MathUtils.degToRad(devOri.alpha), b = THREE.MathUtils.degToRad(devOri.beta), g = THREE.MathUtils.degToRad(devOri.gamma);
+    const orient = THREE.MathUtils.degToRad((screen.orientation && screen.orientation.angle) || window.orientation || 0);
+    gE.set(b, a, -g, 'YXZ'); gq.setFromEuler(gE); gq.multiply(q1); gq.multiply(q0.setFromAxisAngle(zee, -orient));
+    camera.quaternion.copy(gq); pitchObj.rotation.x = 0; rig.rotation.y = alphaOffset;
+  } else { rig.rotation.y = yaw; pitchObj.rotation.x = xr ? 0 : pitch; }
+  animer(film ? filmT() : (performance.now() - T0C) / 1000);   // pendant la visite : son horloge (gelée en pause, sautée par « Suivant » sous le fondu, sauf en pause)
+  draw();
+  if (rec && film) recFrame();
+}
+resize(); setView('chef');
+renderer.setAnimationLoop(tick);
+load().catch(e => { console.error(e); $('bar').hidden = true; $('load').textContent = 'Chargement impossible : ' + e.message; toast('Chargement impossible : ' + e.message); });
+window.DBG = { scene, renderer, camera, THREE, captureEnv, goTo, freeAt, blocked, son, etat: () => film && { i: film.i, n: film.plans.length, t: +filmT().toFixed(1), d: film.plans.map(p => +p[2].toFixed(1)), pause: !!film.pause, audio: son.ctx && son.ctx.state, voix: son.vseg }, pos:() => [Math.round(pos.x * 1000), Math.round(-pos.z * 1000)],
+  look: (X, Y, tX, tY, p = -0.12) => stand(X, Y, tX, tY, p),
+  // cuisiniers (mm) : écart mini de chaque paire sur la boucle ; par plan du film, cuisinier le plus près de la caméra et écart mini à
+  // l'axe de visée d'un cuisinier placé entre la caméra et l'appareil filmé (hors des 80 derniers cm : celui qui y travaille)
+  ecarts: (dt = 0.1) => { const m = {}; for (let t = 0; t < TC; t += dt) { const e = BR.map(c => etat(c, t).p); BR.forEach((a, i) => BR.forEach((b, j) => { if (j <= i) return; const d = Math.hypot(e[i][0] - e[j][0], e[i][1] - e[j][1]), k = a.nom + '-' + b.nom; if (!m[k] || d < m[k][0]) m[k] = [d, t]; })); } return Object.entries(m).map(([k, [d, t]]) => `${k} ${Math.round(d)}@${t.toFixed(1)}`).join(' '); },
+  cadrage: (mode = son.dernier) => { let t0 = 0; return FILM.map(sh => { const p = prise(sh), d = dureeEtape(sh, p, mode); let cam = 1e9, qui = '', gene = 1e9, gq = '';
+    if (p && p.A) for (let k = 0; k <= 1.001; k += 0.05) { const e = 0.5 - 0.5 * Math.cos(Math.PI * k), P = mix(p.A, p.B, e), T = mix(p.TA, p.TB, e), L = Math.hypot(T[0] - P[0], T[1] - P[1]) || 1;
+      for (const c of BR) { const q = etat(c, (t0 + k * d) % TC).p, dc = Math.hypot(q[0] - P[0], q[1] - P[1]), s = ((q[0] - P[0]) * (T[0] - P[0]) + (q[1] - P[1]) * (T[1] - P[1])) / L, n = Math.abs((q[0] - P[0]) * (T[1] - P[1]) - (q[1] - P[1]) * (T[0] - P[0])) / L;
+        if (dc < cam) { cam = dc; qui = c.nom; } if (s > 0 && s < L - 800 && n < gene) { gene = n; gq = c.nom; } } }
+    t0 += d; return `${sh.c || sh.v || 'tour'} ${p && p.A ? Math.round(cam) + ' ' + qui + ' ' + (gene < 1e9 ? Math.round(gene) + ' ' + gq : '-') : '(tour)'}`; }).join(' | '); },
+  brigade: () => BR.map(c => c.nom + ' ' + c.seg.filter(s => s.pts).map(s => `${s.t0}→${s.t1.toFixed(1)}:${Math.round(s.L)}`).join(',')).join(' | '),
+  snap: (w = 1280, h = 720, q = 0.9) => { snapSize = [w, h]; tick(); const d = canvas.toDataURL('image/jpeg', q); snapSize = null; return d; },
+  tour: () => { const p = priseTour(); return { d: +p.d.toFixed(1), pts: p.pts.map(q => q.map(Math.round)), t: p.t.map(x => +x.toFixed(2)), yw: p.yw.map(x => +x.toFixed(3)) }; },   // trajet, horaire et cap du tour (contrôle hors ligne)
+  film: filmStart, prises: () => FILM.map(sh => { const p = prise(sh); return (sh.c || sh.v) + (p && p.A ? ' ' + [...p.A, ...p.B].map(Math.round).join(',') : ''); }).join(' | '),
+  planche: (W = 320, H = 180, k = 0.5, seul = -1, n = 12, mode = son.dernier) => {   // planche contact : une image (milieu par défaut) de chaque plan de la visite, en grille ; seul = i : n images régulières du plan i ; durées du dernier son choisi
+    const pl = []; let tc = 0;
+    for (const sh of FILM) { const p = prise(sh), d = dureeEtape(sh, p, mode); if (p) { pl.push([p, d, tc]); tc += d; } }
+    const vues = seul < 0 ? pl.map(([p, d, t]) => [p, k, t + k * d]) : Array.from({ length: n }, (_, j) => { const [p, d, t] = pl[seul], q = j / (n - 1); return [p, q, t + q * d]; });
+    const cv = document.createElement('canvas'), g = cv.getContext('2d'), ev = renderer.toneMappingExposure;
+    cv.width = W * 4; cv.height = H * Math.ceil(vues.length / 4); snapSize = [W * 2, H * 2]; resize(); labelGroup.visible = false; renderer.toneMappingExposure *= EV_FILM;
+    scene.traverse(o => { if (o.userData.ceiling) o.visible = true; });
+    vues.forEach(([p, q, t], i) => { camera.fov = p.fov || FOV_FILM; camera.updateProjectionMatrix(); if (p.tour) poseTour(p, q); else filmPose(p, q); rig.rotation.y = yaw; pitchObj.rotation.x = pitch; animer(t); draw(); g.drawImage(canvas, (i % 4) * W, Math.floor(i / 4) * H, W, H); });
+    snapSize = null; camera.fov = 64; resize(); camera.updateProjectionMatrix(); renderer.toneMappingExposure = ev;
+    const im = document.createElement('img'); im.src = cv.toDataURL('image/jpeg', 0.85); im.style.cssText = 'position:fixed;inset:0;width:100%;height:100%;object-fit:contain;background:#000;z-index:1000';
+    im.onclick = () => im.remove(); document.body.append(im); return pl.length;
+  } };
+</script>
+</body></html>

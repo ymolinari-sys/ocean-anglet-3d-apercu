@@ -1,0 +1,181 @@
+{
+ "_role": "Voix off de la visite guidée (mode VOIX OFF) : un segment par étape, lu par index.html ; MP3 produits par tools/voix_off.py. texte = version écrite (validation, enregistrement), texte_dit = version phonétique pour la synthèse provisoire. Variante UNOX · CAPIC : segments C05_capic et C08_capic (d'après les FT CAPIC) ; le four UNOX (C12) n'a pas de fiche, son arrêt reste sans voix.",
+ "segments": [
+  {
+   "segment": "entree",
+   "fichier": "entree.mp3",
+   "titre": "Cuisine OCÉAN · Anglet",
+   "texte": "Cuisine OCÉAN, à Anglet. Implantation EVI PRO d'après le plan ZANUSSI du 04/11/26.",
+   "texte_dit": "Cuisine Océan, à Anglet. Implantation EVI PRO d'après le plan Zanussi du quatre novembre deux mille vingt-six.",
+   "mots": 17,
+   "duree_s": 6.96,
+   "voix": "synthèse macOS « Thomas », 165 mots/min (provisoire)",
+   "octets": 56258
+  },
+  {
+   "segment": "tour",
+   "fichier": "tour.mp3",
+   "titre": "Tour d'ensemble",
+   "texte": "Tour d'ensemble : la cuisine en un passage continu, de la zone de cuisson à la laverie.",
+   "texte_dit": "Tour d'ensemble : la cuisine en un passage continu, de la zone de cuisson à la laverie.",
+   "mots": 16,
+   "duree_s": 5.46,
+   "voix": "synthèse macOS « Thomas », 165 mots/min (provisoire)",
+   "octets": 44346
+  },
+  {
+   "segment": "C12",
+   "fichier": "C12.mp3",
+   "titre": "Four Cook Master 6 GN 1/1 + hotte à condensation · MY CHEF",
+   "texte": "Le four mixte MY CHEF Cook Master, 6 GN 1/1, posé sur la table d'angle. Sur le four, une hotte à condensation MY CHEF.",
+   "texte_dit": "Le four mixte Maille Chef Couk Master, six G N un un, posé sur la table d'angle. Sur le four, une hotte à condensation Maille Chef.",
+   "mots": 26,
+   "duree_s": 9.23,
+   "voix": "synthèse macOS « Thomas », 165 mots/min (provisoire)",
+   "octets": 74439
+  },
+  {
+   "segment": "C08",
+   "fichier": "C08.mp3",
+   "titre": "Friteuse électrique 15 L · ZANUSSI",
+   "texte": "La friteuse électrique ZANUSSI EVO900, de 15 L. Sa cuve en V a une zone froide, et les éléments chauffants à infrarouge sont à l'extérieur de la cuve. Réglage de 105 à 185 °C, thermostat de sécurité, vidange par robinet.",
+   "texte_dit": "La friteuse électrique Zanussi Évo neuf cents, de quinze litres. Sa cuve en V a une zone froide, et les éléments chauffants à infrarouge sont à l'extérieur de la cuve. Réglage de cent cinq à cent quatre-vingt-cinq degrés, thermostat de sécurité, vidange par robinet.",
+   "mots": 44,
+   "duree_s": 15.96,
+   "voix": "synthèse macOS « Thomas », 165 mots/min (provisoire)",
+   "octets": 128147
+  },
+  {
+   "segment": "C05",
+   "fichier": "C05.mp3",
+   "titre": "Fourneau 4 feux vifs 800 · ZANUSSI",
+   "texte": "Le fourneau gaz ZANUSSI EVO900, à quatre feux vifs, de 800 mm, posé sur le soubassement réfrigéré. Puissance gaz : 28 kW. Chaque brûleur a un dispositif de sécurité des flammes. Il peut fonctionner au gaz naturel ou au GPL.",
+   "texte_dit": "Le fourneau gaz Zanussi Évo neuf cents, à quatre feux vifs, de huit cents millimètres, posé sur le soubassement réfrigéré. Puissance gaz : vingt-huit kilowatts. Chaque brûleur a un dispositif de sécurité des flammes. Il peut fonctionner au gaz naturel ou au G P L.",
+   "mots": 44,
+   "duree_s": 16.91,
+   "voix": "synthèse macOS « Thomas », 165 mots/min (provisoire)",
+   "octets": 135879
+  },
+  {
+   "segment": "C01",
+   "fichier": "C01.mp3",
+   "titre": "Four sur la cellule · MY CHEF (existant)",
+   "texte": "Ici, le four mixte MY CHEF 6 GN 1/1 existant, posé sur la cellule existante.",
+   "texte_dit": "Ici, le four mixte Maille Chef six G N un un existant, posé sur la cellule existante.",
+   "mots": 17,
+   "duree_s": 6.42,
+   "voix": "synthèse macOS « Thomas », 165 mots/min (provisoire)",
+   "octets": 51869
+  },
+  {
+   "segment": "C03",
+   "fichier": "C03.mp3",
+   "titre": "Soubassement réfrigéré GN 1/1 · CODIGEL",
+   "texte": "Sous le fry-top, le fourneau et le plan neutre : le soubassement réfrigéré CODIGEL GN 1/1, 3 × 2 tiroirs. De -2 à +8 °C. Intérieur en inox AISI 304. Alarme haute et basse température.",
+   "texte_dit": "Sous le fraille-top, le fourneau et le plan neutre : le soubassement réfrigéré Codigel G N un un, trois par deux tiroirs. De moins deux à plus huit degrés. Intérieur en inox A I S I trois cent quatre. Alarme haute et basse température.",
+   "mots": 43,
+   "duree_s": 14.77,
+   "voix": "synthèse macOS « Thomas », 165 mots/min (provisoire)",
+   "octets": 118743
+  },
+  {
+   "segment": "C18",
+   "fichier": "C18.mp3",
+   "titre": "Meuble réfrigéré 6 tiroirs (îlot) · INOMAK",
+   "texte": "Dans l'îlot, le meuble réfrigéré INOMAK à six tiroirs, installé dos à dos avec un second meuble six tiroirs, placé côté cuisson. Température de 0 à +10 °C, classe énergétique B. Le dessus de l'îlot est en inox, avec un pan arrondi.",
+   "texte_dit": "Dans l'îlot, le meuble réfrigéré Inomak à six tiroirs, installé dos à dos avec un second meuble six tiroirs, placé côté cuisson. Température de zéro à plus dix degrés, classe énergétique B. Le dessus de l'îlot est en inox, avec un pan arrondi.",
+   "mots": 43,
+   "duree_s": 15.87,
+   "voix": "synthèse macOS « Thomas », 165 mots/min (provisoire)",
+   "octets": 127520
+  },
+  {
+   "segment": "C19",
+   "fichier": "C19.mp3",
+   "titre": "Présentoir réfrigéré à ingrédients · ATOSA",
+   "texte": "Le présentoir réfrigéré à ingrédients ATOSA, à vitrage droit. Température : de +2 à +8 °C. Structure intérieure et extérieure en inox AISI 304. Il accepte des bacs GN 1/3, jusqu'à 150 mm de profondeur.",
+   "texte_dit": "Le présentoir réfrigéré à ingrédients Atosa, à vitrage droit. Température : de plus deux à plus huit degrés. Structure intérieure et extérieure en inox A I S I trois cent quatre. Il accepte des bacs G N un tiers, jusqu'à cent cinquante millimètres de profondeur.",
+   "mots": 44,
+   "duree_s": 16.39,
+   "voix": "synthèse macOS « Thomas », 165 mots/min (provisoire)",
+   "octets": 131700
+  },
+  {
+   "segment": "C13",
+   "fichier": "C13.mp3",
+   "titre": "3 friteuses à poser · FIAMMA",
+   "texte": "Trois friteuses électriques à poser FIAMMA, sur le meuble réfrigéré à quatre tiroirs. Chacune a une cuve de 8 L avec zone froide, un thermostat réglable de 50 à 180 °C, un thermostat de sécurité à réarmement manuel et un robinet de vidange.",
+   "texte_dit": "Trois friteuses électriques à poser Fiamma, sur le meuble réfrigéré à quatre tiroirs. Chacune a une cuve de huit litres avec zone froide, un thermostat réglable de cinquante à cent quatre-vingts degrés, un thermostat de sécurité à réarmement manuel et un robinet de vidange.",
+   "mots": 44,
+   "duree_s": 15.92,
+   "voix": "synthèse macOS « Thomas », 165 mots/min (provisoire)",
+   "octets": 127938
+  },
+  {
+   "segment": "C17",
+   "fichier": "C17.mp3",
+   "titre": "Bain-marie GN 2/1 · SOFRACA",
+   "texte": "Le bain-marie SOFRACA GN 2/1, encastré dans le dessus de passe, avec son meuble deux portes et six bacs GN 1/3. Thermostat de 0 à 90 °C, résistance sous la cuve, construction inox. Puissance : 3,5 kW.",
+   "texte_dit": "Le bain-marie Sofraca G N deux un, encastré dans le dessus de passe, avec son meuble deux portes et six bacs G N un tiers. Thermostat de zéro à quatre-vingt-dix degrés, résistance sous la cuve, construction inox. Puissance : trois virgule cinq kilowatts.",
+   "mots": 42,
+   "duree_s": 16.6,
+   "voix": "synthèse macOS « Thomas », 165 mots/min (provisoire)",
+   "octets": 133372
+  },
+  {
+   "segment": "P01",
+   "fichier": "P01.mp3",
+   "titre": "Meuble réfrigéré 6 tiroirs avec bac · INOMAK",
+   "texte": "En pâtisserie, le meuble réfrigéré INOMAK à six tiroirs, de 0 à +10 °C, classe énergétique B. Avec lui, un plan de travail commun équipé d'un bac, d'un robinet et d'un dosseret, et un meuble sous évier à une porte.",
+   "texte_dit": "En pâtisserie, le meuble réfrigéré Inomak à six tiroirs, de zéro à plus dix degrés, classe énergétique B. Avec lui, un plan de travail commun équipé d'un bac, d'un robinet et d'un dosseret, et un meuble sous évier à une porte.",
+   "mots": 41,
+   "duree_s": 14.6,
+   "voix": "synthèse macOS « Thomas », 165 mots/min (provisoire)",
+   "octets": 117280
+  },
+  {
+   "segment": "L02",
+   "fichier": "L02.mp3",
+   "titre": "Lave-vaisselle à capot L305-CV · LAMBER",
+   "texte": "Le lave-vaisselle à capot LAMBER L305-CV, avec condenseur de buées à récupération de chaleur. Carrosserie entièrement en inox AISI 304. Le cycle commence à la fermeture du capot. Puissance totale : 10,1 kW.",
+   "texte_dit": "Le lave-vaisselle à capot Lamber, L trois cent cinq C V, avec condenseur de buées à récupération de chaleur. Carrosserie entièrement en inox A I S I trois cent quatre. Le cycle commence à la fermeture du capot. Puissance totale : dix virgule un kilowatts.",
+   "mots": 44,
+   "duree_s": 16.13,
+   "voix": "synthèse macOS « Thomas », 165 mots/min (provisoire)",
+   "octets": 129610
+  },
+  {
+   "segment": "fin",
+   "fichier": "fin.mp3",
+   "titre": "EVI PRO",
+   "texte": "EVI PRO. Image de synthèse non contractuelle.",
+   "texte_dit": "EVI PRO. Image de synthèse non contractuelle.",
+   "mots": 7,
+   "duree_s": 3.19,
+   "voix": "synthèse macOS « Thomas », 165 mots/min (provisoire)",
+   "octets": 26165
+  },
+  {
+   "segment": "C05_capic",
+   "fichier": "C05_capic.mp3",
+   "titre": "Fourneau 4 feux nus 800 · CAPIC (variante)",
+   "texte": "Le fourneau gaz CAPIC CELTIC à quatre feux nus, de 800 mm, posé sur le soubassement réfrigéré. Quatre brûleurs démontables de 6 kW à flamme pilotée, soit 24 kW. Sécurité par veilleuse et thermocouple, manettes sécurisées et protégées, cuvette emboutie et tiroir de propreté.",
+   "texte_dit": "Le fourneau gaz Capic Celtique à quatre feux nus, de huit cents millimètres, posé sur le soubassement réfrigéré. Quatre brûleurs démontables de six kilowatts à flamme pilotée, soit vingt-quatre kilowatts. Sécurité par veilleuse et thermocouple, manettes sécurisées et protégées, cuvette emboutie et tiroir de propreté.",
+   "mots": 45,
+   "duree_s": 19.6,
+   "voix": "synthèse macOS « Thomas », 165 mots/min (provisoire)",
+   "octets": 157404
+  },
+  {
+   "segment": "C08_capic",
+   "fichier": "C08_capic.mp3",
+   "titre": "Friteuse électrique 15 L · CAPIC (variante)",
+   "texte": "La friteuse électrique CAPIC CELTIC de 15 L, sur placard fermé. Puissance : 10 kW, pour 25 à 30 kg/h de frites surgelées 6 × 6. Résistance blindée inox basculante, thermostat 180 °C, sécurité positive à 220 °C, vidange par vanne quart de tour.",
+   "texte_dit": "La friteuse électrique Capic Celtique de quinze litres, sur placard fermé. Puissance : dix kilowatts, pour vingt-cinq à trente kilos par heure de frites surgelées six par six. Résistance blindée inox basculante, thermostat cent quatre-vingts degrés, sécurité positive à deux cent vingt degrés, vidange par vanne quart de tour.",
+   "mots": 48,
+   "duree_s": 20.66,
+   "voix": "synthèse macOS « Thomas », 165 mots/min (provisoire)",
+   "octets": 165763
+  }
+ ]
+}
